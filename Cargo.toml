@@ -1,8 +1,24 @@
 [package]
-name = "Rusky"
+name = "rusky"
 version = "0.1.0"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+toml = "0.5"
+yansi = "*"
+fern = "0.5.2"
+log = "*"
+chrono = "0.4"
+ 
+[dependencies.serde]
+version = "1.0"
+features = ["derive"]
+[dependencies.serenity]
+version = "0.10.8"
+default-features = false
+features = ["client", "gateway", "standard_framework","rustls_backend", "model", "unstable_discord_api"]
+[dependencies.tokio]
+version = "1.6.1"
+features = ["macros", "signal", "rt-multi-thread"]
