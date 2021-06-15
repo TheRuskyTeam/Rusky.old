@@ -3,5 +3,5 @@ pub mod information;
 use information::*;
 
 #[group]
-#[commands(ping)]
+#[commands(ping, botinfo)]
 struct Information;
