@@ -1,91 +1,101 @@
-use humansize::{file_size_opts, FileSize};
-use rustc_version::version as ver;
-use simple_process_stats::ProcessStats;
 use yansi::Paint;
-
-pub fn get_logger_message(level: String, target: String, date: String, message: String) -> String {
+pub fn format_log_message(level: String, target: String, date: String, message: String) -> String {
     let level: String = match level.as_str() {
         "DEBUG" => Paint::new("debug").bold().to_string(),
         "INFO" => Paint::cyan("information").bold().to_string(),
         "ERROR" => Paint::red("error").bold().to_string(),
         "WARN" => Paint::red("warn").underline().to_string(),
         _ => level,
-    }
-    .into();
+    };
     let message = Paint::new(message).bold();
-    let log = format!("{}@{} on {}: {}", level, Paint::yellow(target).bold(), Paint::green(date).bold(), message);
+    let log = format!(
+        "{}@{} on {}: {}",
+        level,
+        Paint::yellow(target).bold(),
+        Paint::green(date).bold(),
+        message
+    );
     log
 }
-
-pub fn setup() -> Result<(), Box<dyn std::error::Error>> {
-    fern::Dispatch::new()
-        .format(|out, message, record| {
-            out.finish(format_args!(
-                "{}",
-                get_logger_message(
-                    record.level().to_string(),
-                    record.target().to_string(),
-                    chrono::Local::now()
-                        .format("[%Y-%m-%d][%H:%M:%S]")
-                        .to_string(),
-                    message.to_string()
-                )
-            ))
-        })
-        .level(log::LevelFilter::Debug)
-        .level_for("hyper", log::LevelFilter::Info)
-        .chain(std::io::stdout())
-        .chain(fern::log_file("rusky.log")?)
-        .apply()?;
-
-    Ok(())
+pub mod misc {
+    use rustc_version::version as ver;
+    pub fn get_rust_version() -> String {
+        let mut version = String::from("unknown");
+        if let Ok(rust_version) = ver() {
+            version = format!(
+                "{}.{}.{}",
+                rust_version.major, rust_version.minor, rust_version.patch
+            );
+        }
+        version
+    }
 }
-#[macro_export]
-macro_rules! run {
-    ($block:block catch $err:ident => $err_block:block) => {
-        let try_block = || -> Result<(), Box<dyn std::error::Error>> {
-            $block
-            Ok(())
-        };
-        if let Err($err) = try_block() {
-            $err_block
+pub mod image {
+    use rand::Rng;
+
+    pub fn random_default_avatar() -> String {
+        let mut random = rand::thread_rng();
+        format!(
+            "https://cdn.discordapp.com/embed/avatars/{}.png",
+            random.gen_range(1..5)
+        )
+    }
+}
+pub mod discord_time {
+    pub fn get_relative_time_string(time: i64) -> String {
+        format!("<t:{}:R>", time)
+    }
+}
+pub mod discord_user {
+    use crate::models::RuskyResult;
+    use serenity::client::Context;
+    use serenity::model::guild::Guild;
+    use serenity::model::prelude::UserId;
+    use serenity::model::user::User;
+
+    pub async fn get_user_by_id(context: &Context, id: u64) -> RuskyResult<User> {
+        match context.cache.user(id).await {
+            Some(user) => Ok(user),
+            None => Ok(context.http.get_user(id).await?),
         }
     }
-}
 
-#[macro_export]
-macro_rules! async_run {
-    ($block:block catch $err:ident => $err_block:block) => {
-        async fn async_block() -> Result<(), Box<dyn std::error::Error>> {
-            $block
-            Ok(())
-        };
-        if let Err($err) = async_block().await {
-            $err_block
+    pub fn format_client_status(status: &[String]) -> String {
+        if status.is_empty() {
+            return String::from("Nenhum");
         }
+        let mut message = String::new();
+        for device in status {
+            let device = match device.as_str() {
+                "web" => "Navegador",
+                "desktop" => "PC",
+                "mobile" => "Celular",
+                _ => "Desconhecido",
+            };
+            if message.is_empty() {
+                message += device;
+            } else {
+                message += &format!(", {}", device);
+            }
+        }
+        message
     }
-}
-pub fn get_version() -> String {
-    let mut version = String::from("unknown");
-    if let Ok(rust_version) = ver() {
-        version = format!(
-            "{}.{}.{}",
-            rust_version.major, rust_version.minor, rust_version.patch
-        );
-    }
-    version
-}
-pub async fn get_ram_usage() -> String {
-    let mut ram_usage = String::from("unknown");
-    if let Ok(stats) = ProcessStats::get().await {
-        let bytes = stats.memory_usage_bytes;
-        ram_usage = format!(
-            "{}",
-            bytes
-                .file_size(file_size_opts::BINARY)
-                .unwrap_or(String::from("unknown"))
-        );
-    }
+    pub async fn get_client_status(guild: &Guild, user_id: &UserId) -> Vec<String> {
+        let mut status: Vec<_> = vec![];
+        if let Some(presence) = guild.presences.get(user_id) {
+            if let Some(client_status) = &presence.client_status {
+                if client_status.web.is_some() {
+                    status.push("web".into());
+                }
+                if client_status.mobile.is_some() {
+                    status.push("mobile".into());
+                }
+                if client_status.desktop.is_some() {
+                    status.push("desktop".into())
+                }
+            }
+        }
 
-    ram_usage
+        status
+    }
 }

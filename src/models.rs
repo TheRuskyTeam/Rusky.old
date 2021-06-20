@@ -1,12 +1,16 @@
-use serde::Deserialize;
+use crate::config::RuskyConfig;
+use serenity::client::bridge::gateway::ShardManager;
+use serenity::prelude::TypeMapKey;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
-#[derive(Debug, Deserialize)]
-pub struct Discord {
-    pub token: String,
-    pub id: u64,
-    pub prefix: String,
+pub type RuskyError = Box<dyn std::error::Error>;
+pub type RuskyResult<T> = Result<T, RuskyError>;
+pub struct ShardManagerContainer;
+impl TypeMapKey for ShardManagerContainer {
+    type Value = Arc<Mutex<ShardManager>>;
 }
-#[derive(Debug, Deserialize)]
-pub struct RuskyConfig {
-    pub discord: Discord,
+pub struct RuskyConfigContainer;
+impl TypeMapKey for RuskyConfigContainer {
+    type Value = Arc<RuskyConfig>;
 }
