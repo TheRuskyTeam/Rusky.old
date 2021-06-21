@@ -1,10 +1,11 @@
 use crate::commands::information::HELP;
 use crate::commands::*;
 use crate::config::RuskyConfig;
+use crate::containers::RuskyConfigContainer;
+use crate::containers::ShardManagerContainer;
 use crate::events::Handler;
-use crate::models::RuskyConfigContainer;
-use crate::models::RuskyResult;
-use crate::models::ShardManagerContainer;
+use crate::hooks;
+use crate::typings::RuskyResult;
 use serenity::client::bridge::gateway::GatewayIntents;
 use serenity::http::Http;
 use serenity::{framework::standard::StandardFramework, Client};
@@ -46,6 +47,7 @@ impl Rusky {
                     .owners(owners)
             })
             .help(&HELP)
+            .after(hooks::after)
             .group(&INFORMATION_GROUP)
             .group(&UTILS_GROUP);
         let client = Client::builder(&config.discord.token)

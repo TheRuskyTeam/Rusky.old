@@ -1,4 +1,4 @@
-use crate::models::RuskyResult;
+use crate::typings::RuskyResult;
 use serde::Deserialize;
 use std::collections::HashSet;
 use std::fs::File;

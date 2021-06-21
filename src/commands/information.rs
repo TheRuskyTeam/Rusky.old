@@ -1,12 +1,14 @@
+use crate::apis::covid19_brazil_api;
 use crate::constants::colors::DISCORD_BLUE;
 use crate::constants::emotes::*;
 use crate::constants::errors_codes::*;
-use crate::models::RuskyConfigContainer;
-use crate::models::ShardManagerContainer;
+
+use crate::containers::RuskyConfigContainer;
+use crate::containers::ShardManagerContainer;
 use crate::util::misc::get_rust_version;
 use humansize::{file_size_opts, FileSize};
+use serenity::builder::CreateEmbed;
 use serenity::client::bridge::gateway::ShardId;
-
 use serenity::framework::standard::{
     help_commands,
     macros::{command, help},
@@ -23,7 +25,7 @@ use sysinfo::{ProcessExt, System, SystemExt};
 #[description("Pong! veja o ping do bot e shard atual.")]
 pub async fn ping(context: &Context, message: &Message, _args: Args) -> CommandResult {
     let mut message = message
-        .reply(context, &format!("{} | Carregando...", LOADING_EMOTE))
+        .reply(context, &format!("{} **·** Carregando...", LOADING_EMOTE))
         .await?;
     let data = context.data.read().await;
 
@@ -93,7 +95,7 @@ pub async fn ping(context: &Context, message: &Message, _args: Args) -> CommandR
 #[description("Minhas informações")]
 pub async fn botinfo(context: &Context, message: &Message, _args: Args) -> CommandResult {
     let mut message = message
-        .reply(context, &format!("{} | Carregando...", LOADING_EMOTE))
+        .reply(context, &format!("{} **·** Carregando...", LOADING_EMOTE))
         .await?;
     let system = System::new_all();
 
@@ -107,16 +109,15 @@ pub async fn botinfo(context: &Context, message: &Message, _args: Args) -> Comma
                 embed
                     .title("Minhas informações")
                     .description(
-                        format!("{} **·** Versão: `v{}`\n{} **·** Versão do Rust: `v{}`\n{} **·** Uso de Ram: `{}`\n{} **·** Uso de CPU: `{}`",
+                        format!("{} **·** Versão: `v{}`\n{} **·** Versão do Rust: `v{}`\n{} **·** Uso de CPU: `{}`\n{} **·** Uso de Ram: `{}`",
                         MAG_EMOTE,
                         env!("CARGO_PKG_VERSION"),
                         RUST_CUSTOM_EMOTE,
                         rust_version,
+						COMPUTER_EMOTE,
+                        cpu_usage,
                         COMPUTER_EMOTE,
                         memory_usage.unwrap_or_else(|_| String::from("...")),
-                        COMPUTER_EMOTE,
-                        cpu_usage,
-
 )
                     )
                     .color(DISCORD_BLUE)
@@ -167,5 +168,45 @@ async fn help(
     owners: HashSet<UserId>,
 ) -> CommandResult {
     let _ = help_commands::with_embeds(context, message, args, help_options, groups, owners).await;
+    Ok(())
+}
+#[command]
+#[aliases("covid-status", "coronavirus-status")]
+async fn covidstatus(context: &Context, message: &Message, _args: Args) -> CommandResult {
+    let mut message = message
+        .reply(context, &format!("{} **·** Carregando...", LOADING_EMOTE))
+        .await?;
+    let status = covid19_brazil_api::fetch_data().await?;
+    let mut embed = CreateEmbed::default();
+    embed.color(DISCORD_BLUE);
+    embed.title(format!("{} **·** Covid status", MAG_EMOTE));
+    let mut total_cases = 0;
+    let mut total_deaths = 0;
+    let mut total_suspects = 0;
+    for state in status.data {
+        total_cases += state.cases;
+        total_deaths += state.deaths;
+        total_suspects += state.suspects;
+        embed
+            .field(
+                state.state,
+                format!(
+                    "{} **·** Casos: {}\n {} **·** Mortes: {}\n{} **·** Suspeitas: {}",
+                    MAG_EMOTE,
+                    state.cases,
+                    SKULL_CROSSBONES_EMOTE,
+                    state.deaths,
+                    WARNING_EMOTE,
+                    state.suspects
+                ),
+                true,
+            )
+            .footer(|f| f.text("Powered by https://covid19-brazil-api.vercel.app/"));
+    }
+    embed.description(format!("{} **·** Total de casos: {}\n{} **·** Total de mortes: {}\n{} **·** Total de suspeitos: {}", MAG_EMOTE, total_cases, SKULL_CROSSBONES_EMOTE, total_deaths, WARNING_EMOTE, total_suspects));
+    message
+        .edit(context, |builder| builder.content("").set_embed(embed))
+        .await?;
+
     Ok(())
 }

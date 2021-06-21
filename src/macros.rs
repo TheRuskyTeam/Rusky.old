@@ -2,7 +2,7 @@ pub mod util {
     #[macro_export]
     macro_rules! run {
     	($block:block catch $err:ident => $err_block:block) => {
-        	let try_block = || -> Result<(), Box<dyn std::error::Error>> {
+        	let try_block = || -> rusky::typings::RuskyResult<()> {
             	$block
             	Ok(())
         	};
@@ -14,7 +14,7 @@ pub mod util {
     #[macro_export]
     macro_rules! async_run {
         ($block:block catch $err:ident => $err_block:block) => {
-            async fn async_block() -> Result<(), Box<dyn std::error::Error>> {
+            async fn async_block() -> rusky::typings::RuskyResult<()> {
                 $block
                 Ok(())
             };

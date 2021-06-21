@@ -47,7 +47,7 @@ pub mod discord_time {
     }
 }
 pub mod discord_user {
-    use crate::models::RuskyResult;
+    use crate::typings::RuskyResult;
     use serenity::client::Context;
     use serenity::model::guild::Guild;
     use serenity::model::prelude::UserId;
