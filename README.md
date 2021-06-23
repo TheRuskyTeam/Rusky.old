@@ -1,5 +1,6 @@
 # Rusky
 ## Um simples bot para o discord!
+![](https://tokei.rs/b1/github/ruskybot/rusky)
 # 🚀 Executando 
 ## ⚠️ Antes de tudo você precisa do [Rust](https://rust-lang.org) Instalado você pode instalar clicando [aqui](https://rustup.rs) 
 ### Preparando 
