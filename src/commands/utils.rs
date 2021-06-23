@@ -288,40 +288,28 @@ pub async fn calc(context: &Context, message: &Message, _args: Args) -> CommandR
                                     .await;
                             }
                             _ => {
-                                //let _ = message
-                                //    .reply(
-                                //       context,
-                                //        format!(
-                                //            "custom_id: `{:?}`\nToken: `{:?}`",
-                                //            button.custom_id, tk
-                                //        ),
-                                //    )
-                                //    .await;
+                                let mut tks = tks.lock().await;
+                                tks.push(tk);
 
-                                {
-                                    let mut tks = tks.lock().await;
-                                    tks.push(tk);
-
-                                    let _ = it
-                                        .create_interaction_response(context, |it| {
-                                            it.kind(InteractionResponseType::UpdateMessage)
-                                                .interaction_response_data(|data| {
-                                                    data.create_embed(|embed| {
-                                                        embed
-                                                            .field(
-                                                                "Entrada",
-                                                                format!(
-                                                                    "`{}`",
-                                                                    calc_util::parse_tks(&tks)
-                                                                ),
-                                                                true,
-                                                            )
-                                                            .field("Saida", "`???`", true)
-                                                    })
+                                let _ = it
+                                    .create_interaction_response(context, |it| {
+                                        it.kind(InteractionResponseType::UpdateMessage)
+                                            .interaction_response_data(|data| {
+                                                data.create_embed(|embed| {
+                                                    embed
+                                                        .field(
+                                                            "Entrada",
+                                                            format!(
+                                                                "`{}`",
+                                                                calc_util::parse_tks(&tks)
+                                                            ),
+                                                            true,
+                                                        )
+                                                        .field("Saida", "`???`", true)
                                                 })
-                                        })
-                                        .await;
-                                }
+                                            })
+                                    })
+                                    .await;
                             }
                         }
                     }
