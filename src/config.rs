@@ -1,8 +1,6 @@
 use crate::typings::RuskyResult;
 use serde::Deserialize;
-use std::collections::HashSet;
-use std::fs::File;
-use std::io::Read;
+use std::{collections::HashSet, fs::File, io::Read};
 
 #[derive(Deserialize, Clone)]
 pub struct Discord {

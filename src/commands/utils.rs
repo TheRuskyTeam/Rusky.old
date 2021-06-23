@@ -1,21 +1,23 @@
-use crate::constants::colors::DISCORD_BLUE;
-use crate::constants::emotes::*;
-use crate::util::calculator_command as calc_util;
-use crate::util::{
-    discord_time::get_relative_time_string,
-    discord_user::{format_client_status, get_client_status},
-    image::random_default_avatar,
+use crate::{
+    constants::{colors::DISCORD_BLUE, emotes::*},
+    util::{
+        calculator_command as calc_util,
+        discord_time::get_relative_time_string,
+        discord_user::{format_client_status, get_client_status},
+        image::random_default_avatar,
+    },
 };
 use futures::lock::Mutex;
-use serenity::framework::standard::{macros::command, Args, CommandResult};
-use serenity::futures::StreamExt;
-use serenity::model::interactions::ButtonStyle;
-use serenity::model::interactions::InteractionData;
-use serenity::model::interactions::InteractionResponseType;
-use serenity::model::prelude::*;
-use serenity::prelude::*;
-use std::sync::Arc;
-use std::time::Duration;
+use serenity::{
+    framework::standard::{macros::command, Args, CommandResult},
+    futures::StreamExt,
+    model::{
+        interactions::{ButtonStyle, InteractionData, InteractionResponseType},
+        prelude::*,
+    },
+    prelude::*,
+};
+use std::{sync::Arc, time::Duration};
 #[command]
 #[description("informações sobre um usuário")]
 #[aliases("whois")]
@@ -34,14 +36,14 @@ pub async fn userinfo(context: &Context, message: &Message, _args: Args) -> Comm
                         .title(&format!("Informações de {}", user.tag()))
                         .thumbnail(user.avatar_url().unwrap_or_else(random_default_avatar))
                         .description(format!(
-                            "{} **·** Tag: `{}`\n{} **·** Conta criada: {}\n{} **·** Dispositivo: `{}`",
+                            "{} **·** Tag: `{}`\n{} **·** Conta criada: {}\n{} **·** Dispositivo: \
+                             `{}`",
                             DETECTIVE_EMOTE,
                             user.tag(),
                             DATE_EMOTE,
                             get_relative_time_string(user.created_at().timestamp()),
                             COMPUTER_EMOTE,
                             statuses,
-
                         ))
                         .color(DISCORD_BLUE)
                 })

@@ -1,9 +1,10 @@
 use crate::constants::emotes::ERROR_EMOTE;
 use log::{error, info};
-use serenity::client::Context;
-use serenity::framework::standard::macros::hook;
-use serenity::framework::standard::CommandResult;
-use serenity::model::channel::Message;
+use serenity::{
+    client::Context,
+    framework::standard::{macros::hook, CommandResult},
+    model::channel::Message,
+};
 #[hook]
 pub async fn after(
     context: &Context,
@@ -17,7 +18,16 @@ pub async fn after(
         }
         Err(err) => {
             error!("{:?}", err);
-            let _  = message.reply(context, &format!("{} **·** Me desculpe! Ocorreu um erro fatal no comando `{}`, Que resultou nessa mensagem.: `{:?}` ", ERROR_EMOTE, command_name, err)).await;
+            let _ = message
+                .reply(
+                    context,
+                    &format!(
+                        "{} **·** Me desculpe! Ocorreu um erro fatal no comando `{}`, Que \
+                         resultou nessa mensagem.: `{:?}` ",
+                        ERROR_EMOTE, command_name, err
+                    ),
+                )
+                .await;
         }
     }
 }

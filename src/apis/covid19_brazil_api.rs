@@ -1,5 +1,4 @@
-use crate::constants::urls::COVID19_BRAZIL_API_URL;
-use crate::typings::RuskyResult;
+use crate::{constants::urls::COVID19_BRAZIL_API_URL, typings::RuskyResult};
 use isahc::prelude::*;
 use serde::Deserialize;
 #[derive(Deserialize)]
@@ -20,8 +19,7 @@ pub async fn fetch_data() -> RuskyResult<Covid19BrazilApiResponse> {
     Ok(serde_json::from_str(&res.text().await?)?)
 }
 pub mod countries {
-    use crate::constants::urls::COVID19_BRAZIL_COUNTRIES_API_URL;
-    use crate::typings::RuskyResult;
+    use crate::{constants::urls::COVID19_BRAZIL_COUNTRIES_API_URL, typings::RuskyResult};
     use isahc::prelude::*;
     use serde::Deserialize;
     #[derive(Deserialize)]

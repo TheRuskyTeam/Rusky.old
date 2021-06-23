@@ -1,6 +1,5 @@
 use log::info;
-use serenity::model::prelude::Ready;
-use serenity::{async_trait, prelude::*};
+use serenity::{async_trait, model::prelude::Ready, prelude::*};
 pub struct Handler;
 #[async_trait]
 impl EventHandler for Handler {

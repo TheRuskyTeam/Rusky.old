@@ -1,6 +1,5 @@
 use crate::config::RuskyConfig;
-use serenity::client::bridge::gateway::ShardManager;
-use serenity::prelude::TypeMapKey;
+use serenity::{client::bridge::gateway::ShardManager, prelude::TypeMapKey};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 pub struct ShardManagerContainer;

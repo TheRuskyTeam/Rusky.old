@@ -57,9 +57,7 @@ pub mod bot {
     macro_rules! async_main {
         ($block:block) => {
             #[tokio::main]
-            async fn main() {
-                $block
-            }
+            async fn main() { $block }
         };
     }
 }

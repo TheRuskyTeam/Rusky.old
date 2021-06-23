@@ -1,8 +1,4 @@
-use rusky::async_run;
-use rusky::config::RuskyConfig;
-use rusky::events::Handler;
-use rusky::rusky::Rusky;
-use rusky::{async_main, setup};
+use rusky::{async_main, async_run, config::RuskyConfig, events::Handler, rusky::Rusky, setup};
 
 use log::{error, info};
 

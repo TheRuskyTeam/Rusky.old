@@ -42,16 +42,14 @@ pub mod image {
     }
 }
 pub mod discord_time {
-    pub fn get_relative_time_string(time: i64) -> String {
-        format!("<t:{}:R>", time)
-    }
+    pub fn get_relative_time_string(time: i64) -> String { format!("<t:{}:R>", time) }
 }
 pub mod discord_user {
     use crate::typings::RuskyResult;
-    use serenity::client::Context;
-    use serenity::model::guild::Guild;
-    use serenity::model::prelude::UserId;
-    use serenity::model::user::User;
+    use serenity::{
+        client::Context,
+        model::{guild::Guild, prelude::UserId, user::User},
+    };
 
     pub async fn get_user_by_id(context: &Context, id: u64) -> RuskyResult<User> {
         match context.cache.user(id).await {

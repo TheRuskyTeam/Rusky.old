@@ -1,16 +1,18 @@
-use crate::commands::information::HELP;
-use crate::commands::*;
-use crate::config::RuskyConfig;
-use crate::containers::RuskyConfigContainer;
-use crate::containers::ShardManagerContainer;
-use crate::events::Handler;
-use crate::hooks;
-use crate::typings::RuskyResult;
-use serenity::client::bridge::gateway::GatewayIntents;
-use serenity::http::Http;
-use serenity::{framework::standard::StandardFramework, Client};
-use std::collections::HashSet;
-use std::sync::Arc;
+use crate::{
+    commands::{information::HELP, *},
+    config::RuskyConfig,
+    containers::{RuskyConfigContainer, ShardManagerContainer},
+    events::Handler,
+    hooks,
+    typings::RuskyResult,
+};
+use serenity::{
+    client::bridge::gateway::GatewayIntents,
+    framework::standard::StandardFramework,
+    http::Http,
+    Client,
+};
+use std::{collections::HashSet, sync::Arc};
 
 pub struct Rusky {
     client: Client,
@@ -20,6 +22,7 @@ impl Rusky {
         self.client.start_shards(shard_amount).await?;
         Ok(())
     }
+
     pub async fn new(config: &RuskyConfig, handler: Handler) -> RuskyResult<Self> {
         let http = Http::new_with_token(&config.discord.token);
         let (owners, bot_id) = match http.get_current_application_info().await {

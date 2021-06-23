@@ -1,23 +1,25 @@
-use crate::apis::covid19_brazil_api;
-use crate::constants::colors::DISCORD_BLUE;
-use crate::constants::emotes::*;
-use crate::constants::errors_codes::*;
-use crate::containers::RuskyConfigContainer;
-use crate::containers::ShardManagerContainer;
-use crate::util::misc::get_rust_version;
-use humansize::{file_size_opts, FileSize};
-use serenity::builder::CreateEmbed;
-use serenity::client::bridge::gateway::ShardId;
-use serenity::framework::standard::{
-    help_commands,
-    macros::{command, help},
-    Args, CommandGroup, CommandResult, HelpOptions,
+use crate::{
+    apis::covid19_brazil_api,
+    constants::{colors::DISCORD_BLUE, emotes::*, errors_codes::*},
+    containers::{RuskyConfigContainer, ShardManagerContainer},
+    util::misc::get_rust_version,
 };
-use serenity::model::prelude::*;
-use serenity::prelude::*;
-use std::collections::HashSet;
-use std::process;
-use std::time::Instant;
+use humansize::{file_size_opts, FileSize};
+use serenity::{
+    builder::CreateEmbed,
+    client::bridge::gateway::ShardId,
+    framework::standard::{
+        help_commands,
+        macros::{command, help},
+        Args,
+        CommandGroup,
+        CommandResult,
+        HelpOptions,
+    },
+    model::prelude::*,
+    prelude::*,
+};
+use std::{collections::HashSet, process, time::Instant};
 use sysinfo::{ProcessExt, System, SystemExt};
 
 #[command]
@@ -76,15 +78,16 @@ pub async fn ping(context: &Context, message: &Message, _args: Args) -> CommandR
                     .title(&format!("{} **·** Pong!", PING_PONG_EMOTE))
                     .color(0x5865F2)
                     .description(&format!(
-                    "{} **·** Shard Atual: `{}/{}`\n{} **·** Latencia do WebSocket: `{}`\n{} **·** Latencia da API: `{:?}`",
-                    SATELLITE_OBITAL_EMOTE,
-                    context.shard_id + 1,
-                    shard_amount,
-                    STOPWATCH_EMOTE,
-                    websocket_ping,
-                    ZAP_EMOTE,
-                    api_ping
-                ))
+                        "{} **·** Shard Atual: `{}/{}`\n{} **·** Latencia do WebSocket: `{}`\n{} \
+                         **·** Latencia da API: `{:?}`",
+                        SATELLITE_OBITAL_EMOTE,
+                        context.shard_id + 1,
+                        shard_amount,
+                        STOPWATCH_EMOTE,
+                        websocket_ping,
+                        ZAP_EMOTE,
+                        api_ping
+                    ))
             })
         })
         .await?;
@@ -103,25 +106,27 @@ pub async fn botinfo(context: &Context, message: &Message, _args: Args) -> Comma
         let rust_version = get_rust_version();
         let memory_usage = (process.memory() * 1024).file_size(file_size_opts::BINARY);
         let cpu_usage = format!("{}%", process.cpu_usage());
-        message.edit(context, |builder| {
-            builder.content("").embed(|embed| {
-                embed
-                    .title("Minhas informações")
-                    .description(
-                        format!("{} **·** Versão: `v{}`\n{} **·** Versão do Rust: `v{}`\n{} **·** Uso de CPU: `{}`\n{} **·** Uso de Ram: `{}`",
-                        MAG_EMOTE,
-                        env!("CARGO_PKG_VERSION"),
-                        RUST_CUSTOM_EMOTE,
-                        rust_version,
-						COMPUTER_EMOTE,
-                        cpu_usage,
-                        COMPUTER_EMOTE,
-                        memory_usage.unwrap_or_else(|_| String::from("...")),
-)
-                    )
-                    .color(DISCORD_BLUE)
+        message
+            .edit(context, |builder| {
+                builder.content("").embed(|embed| {
+                    embed
+                        .title("Minhas informações")
+                        .description(format!(
+                            "{} **·** Versão: `v{}`\n{} **·** Versão do Rust: `v{}`\n{} **·** Uso \
+                             de CPU: `{}`\n{} **·** Uso de Ram: `{}`",
+                            MAG_EMOTE,
+                            env!("CARGO_PKG_VERSION"),
+                            RUST_CUSTOM_EMOTE,
+                            rust_version,
+                            COMPUTER_EMOTE,
+                            cpu_usage,
+                            COMPUTER_EMOTE,
+                            memory_usage.unwrap_or_else(|_| String::from("...")),
+                        ))
+                        .color(DISCORD_BLUE)
+                })
             })
-        }).await?;
+            .await?;
     } else {
         message
             .edit(context, |builder| {
@@ -138,8 +143,15 @@ pub async fn botinfo(context: &Context, message: &Message, _args: Args) -> Comma
 
 #[help]
 #[ungrouped_label("Sem grupo")]
-#[strikethrough_commands_tip_in_dm("Os comandos ~~tachados~~ não estão disponíveis porque requerem permissões, requerem uma função específica, requerem certas condições ou não podem ser executados em mensagens diretas.")]
-#[strikethrough_commands_tip_in_guild("Os comandos ~~tachados~~ não estão disponíveis porque requerem permissões, requerem uma função específica, requerem certas condições ou não podem ser executados em Guildas.")]
+#[strikethrough_commands_tip_in_dm(
+    "Os comandos ~~tachados~~ não estão disponíveis porque requerem permissões, requerem uma \
+     função específica, requerem certas condições ou não podem ser executados em mensagens \
+     diretas."
+)]
+#[strikethrough_commands_tip_in_guild(
+    "Os comandos ~~tachados~~ não estão disponíveis porque requerem permissões, requerem uma \
+     função específica, requerem certas condições ou não podem ser executados em Guildas."
+)]
 #[individual_command_tip(
     "Olá se você quiser mais informações sobre um comando passe o nome do comando como argumento."
 )]
@@ -202,7 +214,11 @@ async fn covidstatus(context: &Context, message: &Message, _args: Args) -> Comma
             )
             .footer(|f| f.text("Powered by https://covid19-brazil-api.vercel.app/"));
     }
-    embed.description(format!("{} **·** Total de casos: {}\n{} **·** Total de mortes: {}\n{} **·** Total de suspeitos: {}", MAG_EMOTE, total_cases, SKULL_CROSSBONES_EMOTE, total_deaths, WARNING_EMOTE, total_suspects));
+    embed.description(format!(
+        "{} **·** Total de casos: {}\n{} **·** Total de mortes: {}\n{} **·** Total de suspeitos: \
+         {}",
+        MAG_EMOTE, total_cases, SKULL_CROSSBONES_EMOTE, total_deaths, WARNING_EMOTE, total_suspects
+    ));
     message
         .edit(context, |builder| builder.content("").set_embed(embed))
         .await?;
