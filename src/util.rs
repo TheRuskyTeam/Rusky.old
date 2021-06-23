@@ -99,3 +99,68 @@ pub mod discord_user {
         status
     }
 }
+pub mod calculator_command {
+    #[derive(Debug)]
+    pub enum Token {
+        Minus,
+        Plus,
+        Divide,
+        MultiPly,
+        Point,
+        Number(isize),
+        Result,
+        Clear,
+        Delete,
+        Wedge,
+        Unknown,
+        BracketLeft,
+        BracketRight,
+    }
+    unsafe impl Send for Token {}
+    pub fn parse_str(s: &String) -> Token {
+        match s.as_str() {
+            "pls" => Token::Plus,
+            "min" => Token::Minus,
+            "ply" => Token::MultiPly,
+            "res" => Token::Result,
+            "cls" => Token::Clear,
+            "del" => Token::Delete,
+            "wed" => Token::Wedge,
+            "div" => Token::Divide,
+            "pon" => Token::Point,
+            "bkl" => Token::BracketLeft,
+            "bkr" => Token::BracketRight,
+            _ => {
+                if let Ok(int) = s.parse::<isize>() {
+                    Token::Number(int)
+                } else {
+                    Token::Unknown
+                }
+            }
+        }
+    }
+    pub fn parse_tks(tks: &[Token]) -> String {
+        let mut res = String::new();
+        for tk in tks {
+            match tk {
+                Token::Number(n) => res += &format!("{}", n),
+                Token::Clear => res.clear(),
+                Token::Plus => res += "+",
+                Token::MultiPly => res += "*",
+                Token::Minus => res += "-",
+                Token::Divide => res += "/",
+                Token::Wedge => res += "^",
+                Token::BracketLeft => res += "(",
+                Token::BracketRight => res += ")",
+                Token::Delete => {
+                    let mut chars = res.chars();
+                    chars.next_back();
+                    res = chars.as_str().to_string()
+                }
+                Token::Point => res += ".",
+                Token::Unknown | Token::Result => {}
+            };
+        }
+        res
+    }
+}

@@ -2,7 +2,6 @@ use crate::apis::covid19_brazil_api;
 use crate::constants::colors::DISCORD_BLUE;
 use crate::constants::emotes::*;
 use crate::constants::errors_codes::*;
-
 use crate::containers::RuskyConfigContainer;
 use crate::containers::ShardManagerContainer;
 use crate::util::misc::get_rust_version;

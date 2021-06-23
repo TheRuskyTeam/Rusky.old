@@ -23,4 +23,6 @@ pub mod colors {
 }
 pub mod urls {
     pub const COVID19_BRAZIL_API_URL: &str = "https://covid19-brazil-api.vercel.app/api/report/v1";
+    pub const COVID19_BRAZIL_COUNTRIES_API_URL: &str =
+        "https://covid19-brazil-api.vercel.app/api/report/v1/countries";
 }
