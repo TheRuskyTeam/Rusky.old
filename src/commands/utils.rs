@@ -1,7 +1,5 @@
 use crate::{
-    apis::discord::*,
     constants::{colors::DISCORD_BLUE, emotes::*},
-    containers::RuskyConfigContainer,
     util::{
         calculator_command as calc_util,
         discord_time::get_relative_time_string,
@@ -31,10 +29,7 @@ pub async fn userinfo(context: &Context, message: &Message, _args: Args) -> Comm
         let statuses = format_client_status(
             &get_client_status(&message.guild(context).await.unwrap(), &user.id).await,
         );
-        let data = context.data.read().await;
-        let config = data.get::<RuskyConfigContainer>().unwrap();
-        let info = get_user_info(&config.discord.token, *user.id.as_u64()).await?;
-        let mut banner: Option<String> = None;
+        let _data = context.data.read().await;
         message
             .channel_id
             .send_message(context, |builder| {
@@ -52,7 +47,6 @@ pub async fn userinfo(context: &Context, message: &Message, _args: Args) -> Comm
                             COMPUTER_EMOTE,
                             statuses,
                         ))
-                        .image(banner.unwrap_or("NULL".into()))
                         .color(DISCORD_BLUE)
                 })
             })
@@ -257,71 +251,61 @@ pub async fn calc(context: &Context, message: &Message, _args: Args) -> CommandR
 
     let _: Vec<_> = collector
         .then(|it| async {
-            if let Some(data) = &it.data {
-                if let InteractionData::MessageComponent(button) = data {
-                    let splited = button.custom_id.split("_").collect::<Vec<_>>();
-                    if !splited.is_empty() {
-                        let action = &splited[1];
+            if let Some(InteractionData::MessageComponent(button)) = &it.data {
+                let splited = button.custom_id.split('_').collect::<Vec<_>>();
+                if !splited.is_empty() {
+                    let action = &splited[1];
 
-                        let tk = calc_util::parse_str(&action.to_string());
-                        match tk {
-                            calc_util::Token::Result => {
-                                let tks = tks.lock().await;
+                    let tk = calc_util::parse_str(&action.to_string());
+                    match tk {
+                        calc_util::Token::Result => {
+                            let tks = tks.lock().await;
 
-                                let mut ns = fasteval::EmptyNamespace;
-                                let eval = fasteval::ez_eval(
-                                    &calc_util::parse_tks(&tks, &memory).await,
-                                    &mut ns,
-                                );
-                                let inp = calc_util::parse_tks(&tks, &memory).await;
-                                let _ = it
-                                    .create_interaction_response(context, |it| {
-                                        it.kind(InteractionResponseType::UpdateMessage)
-                                            .interaction_response_data(|data| {
-                                                data.create_embed(|embed| {
-                                                    embed
-                                                        .field(
-                                                            "Entrada",
-                                                            format!("`{}`", inp),
-                                                            true,
-                                                        )
-                                                        .field(
-                                                            "Saida",
-                                                            format!("`{}`", {
-                                                                if let Ok(ev) = eval {
-                                                                    ev.to_string()
-                                                                } else {
-                                                                    "Expressão inválida".to_string()
-                                                                }
-                                                            }),
-                                                            true,
-                                                        )
-                                                })
+                            let mut ns = fasteval::EmptyNamespace;
+                            let eval = fasteval::ez_eval(
+                                &calc_util::parse_tks(&tks, &memory).await,
+                                &mut ns,
+                            );
+                            let inp = calc_util::parse_tks(&tks, &memory).await;
+                            let _ = it
+                                .create_interaction_response(context, |it| {
+                                    it.kind(InteractionResponseType::UpdateMessage)
+                                        .interaction_response_data(|data| {
+                                            data.create_embed(|embed| {
+                                                embed
+                                                    .field("Entrada", format!("`{}`", inp), true)
+                                                    .field(
+                                                        "Saida",
+                                                        format!("`{}`", {
+                                                            if let Ok(ev) = eval {
+                                                                ev.to_string()
+                                                            } else {
+                                                                "Expressão inválida".to_string()
+                                                            }
+                                                        }),
+                                                        true,
+                                                    )
                                             })
-                                    })
-                                    .await;
-                            }
-                            _ => {
-                                let mut tks = tks.lock().await;
-                                tks.push(tk);
-                                let inp = calc_util::parse_tks(&tks, &memory).await;
-                                let _ = it
-                                    .create_interaction_response(context, |it| {
-                                        it.kind(InteractionResponseType::UpdateMessage)
-                                            .interaction_response_data(|data| {
-                                                data.create_embed(|embed| {
-                                                    embed
-                                                        .field(
-                                                            "Entrada",
-                                                            format!("`{}`", inp),
-                                                            true,
-                                                        )
-                                                        .field("Saida", "`???`", true)
-                                                })
+                                        })
+                                })
+                                .await;
+                        }
+                        _ => {
+                            let mut tks = tks.lock().await;
+                            tks.push(tk);
+                            let inp = calc_util::parse_tks(&tks, &memory).await;
+                            let _ = it
+                                .create_interaction_response(context, |it| {
+                                    it.kind(InteractionResponseType::UpdateMessage)
+                                        .interaction_response_data(|data| {
+                                            data.create_embed(|embed| {
+                                                embed
+                                                    .field("Entrada", format!("`{}`", inp), true)
+                                                    .field("Saida", "`???`", true)
                                             })
-                                    })
-                                    .await;
-                            }
+                                        })
+                                })
+                                .await;
                         }
                     }
                 }

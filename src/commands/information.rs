@@ -73,7 +73,7 @@ pub async fn ping(context: &Context, message: &Message, mut args: Args) -> Comma
             for (shard_id, shard) in runners.iter() {
                 table.add_row(row![
                     match shard_id {
-                        &ShardId(id) => id + 1,
+                        ShardId(id) => id + 1,
                     },
                     match shard.latency {
                         Some(latency) => format!("{:?}", latency),
@@ -281,7 +281,7 @@ pub async fn guildinfo(context: &Context, message: &Message, mut args: Args) -> 
             embed.image(banner_url);
         }
 
-        embed.thumbnail(guild.icon_url().unwrap_or(random_default_avatar()));
+        embed.thumbnail(guild.icon_url().unwrap_or_else(random_default_avatar));
         embed.color(DISCORD_BLUE);
         embed.description(format!(
             "ID: `{}`\nDescrição: `{}`\nQuantidade de membros: `{}/{} ({}%)`\nDono: <@{}> \
@@ -289,7 +289,7 @@ pub async fn guildinfo(context: &Context, message: &Message, mut args: Args) -> 
             guild.id,
             guild
                 .description
-                .unwrap_or("Servidor sem descrição.".into()),
+                .unwrap_or_else(|| "Servidor sem descrição.".into()),
             guild.member_count,
             guild.max_members.unwrap_or(10000),
             (100 * guild.member_count) / guild.max_members.unwrap_or(10000),

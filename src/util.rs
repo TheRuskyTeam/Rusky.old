@@ -132,8 +132,8 @@ pub mod calculator_command {
         MemoryClear,
     }
     unsafe impl Send for Token {}
-    pub fn parse_str(s: &String) -> Token {
-        match s.as_str() {
+    pub fn parse_str(s: &str) -> Token {
+        match s {
             "pls" => Token::Plus,
             "min" => Token::Minus,
             "ply" => Token::MultiPly,

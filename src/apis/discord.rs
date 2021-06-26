@@ -9,4 +9,4 @@ pub struct UserApiResponse {
     pub user: User,
 }
 // TODO: Esperando o discord liberar o endpoint profile para poder fazer isso....
-pub async fn get_user_info(token: &String, id: u64) {}
+pub async fn get_user_info(_token: &str, _id: u64) {}
