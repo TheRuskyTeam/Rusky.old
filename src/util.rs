@@ -18,7 +18,27 @@ pub fn format_log_message(level: String, target: String, date: String, message: 
     log
 }
 pub mod misc {
+    use serenity::{
+        client::Context,
+        model::{guild::Guild, user::User},
+    };
+
+    pub async fn get_user_by_id(context: &Context, id: u64) -> RuskyResult<User> {
+        match context.cache.user(id).await {
+            Some(user) => Ok(user),
+            None => Ok(context.http.get_user(id).await?),
+        }
+    }
+
+    pub async fn get_guild_by_id(context: &Context, id: u64) -> RuskyResult<Guild> {
+        match context.cache.guild(id).await {
+            Some(guild) => Ok(guild),
+            None => Err("guild not in cache.".into()),
+        }
+    }
     use rustc_version::version as ver;
+
+    use crate::typings::RuskyResult;
     pub fn get_rust_version() -> String {
         let mut version = String::from("unknown");
         if let Ok(rust_version) = ver() {
@@ -41,22 +61,12 @@ pub mod image {
         )
     }
 }
+
 pub mod discord_time {
     pub fn get_relative_time_string(time: i64) -> String { format!("<t:{}:R>", time) }
 }
 pub mod discord_user {
-    use crate::typings::RuskyResult;
-    use serenity::{
-        client::Context,
-        model::{guild::Guild, prelude::UserId, user::User},
-    };
-
-    pub async fn get_user_by_id(context: &Context, id: u64) -> RuskyResult<User> {
-        match context.cache.user(id).await {
-            Some(user) => Ok(user),
-            None => Ok(context.http.get_user(id).await?),
-        }
-    }
+    use serenity::model::{guild::Guild, id::UserId};
 
     pub fn format_client_status(status: &[String]) -> String {
         if status.is_empty() {
@@ -98,6 +108,10 @@ pub mod discord_user {
     }
 }
 pub mod calculator_command {
+    use std::sync::Arc;
+
+    use futures::lock::Mutex;
+
     #[derive(Debug)]
     pub enum Token {
         Minus,
@@ -113,6 +127,9 @@ pub mod calculator_command {
         Unknown,
         BracketLeft,
         BracketRight,
+        MemoryWrite,
+        MemoryRead,
+        MemoryClear,
     }
     unsafe impl Send for Token {}
     pub fn parse_str(s: &String) -> Token {
@@ -128,6 +145,9 @@ pub mod calculator_command {
             "pon" => Token::Point,
             "bkl" => Token::BracketLeft,
             "bkr" => Token::BracketRight,
+            "mer" => Token::MemoryRead,
+            "mew" => Token::MemoryWrite,
+            "mec" => Token::MemoryClear,
             _ => {
                 if let Ok(int) = s.parse::<isize>() {
                     Token::Number(int)
@@ -137,8 +157,9 @@ pub mod calculator_command {
             }
         }
     }
-    pub fn parse_tks(tks: &[Token]) -> String {
+    pub async fn parse_tks(tks: &[Token], memory: &Arc<Mutex<String>>) -> String {
         let mut res = String::new();
+        let mut memory = memory.lock().await;
         for tk in tks {
             match tk {
                 Token::Number(n) => res += &format!("{}", n),
@@ -156,6 +177,15 @@ pub mod calculator_command {
                     res = chars.as_str().to_string()
                 }
                 Token::Point => res += ".",
+                Token::MemoryWrite => {
+                    memory.insert_str(0, &res);
+                }
+                Token::MemoryRead => {
+                    res += &memory;
+                }
+                Token::MemoryClear => {
+                    memory.clear();
+                }
                 Token::Unknown | Token::Result => {}
             };
         }

@@ -1,5 +1,7 @@
 use crate::{
+    apis::discord::*,
     constants::{colors::DISCORD_BLUE, emotes::*},
+    containers::RuskyConfigContainer,
     util::{
         calculator_command as calc_util,
         discord_time::get_relative_time_string,
@@ -17,6 +19,7 @@ use serenity::{
     },
     prelude::*,
 };
+
 use std::{sync::Arc, time::Duration};
 #[command]
 #[description("informações sobre um usuário")]
@@ -28,6 +31,10 @@ pub async fn userinfo(context: &Context, message: &Message, _args: Args) -> Comm
         let statuses = format_client_status(
             &get_client_status(&message.guild(context).await.unwrap(), &user.id).await,
         );
+        let data = context.data.read().await;
+        let config = data.get::<RuskyConfigContainer>().unwrap();
+        let info = get_user_info(&config.discord.token, *user.id.as_u64()).await?;
+        let mut banner: Option<String> = None;
         message
             .channel_id
             .send_message(context, |builder| {
@@ -37,7 +44,7 @@ pub async fn userinfo(context: &Context, message: &Message, _args: Args) -> Comm
                         .thumbnail(user.avatar_url().unwrap_or_else(random_default_avatar))
                         .description(format!(
                             "{} **·** Tag: `{}`\n{} **·** Conta criada: {}\n{} **·** Dispositivo: \
-                             `{}`",
+                             `{}`\n",
                             DETECTIVE_EMOTE,
                             user.tag(),
                             DATE_EMOTE,
@@ -45,6 +52,7 @@ pub async fn userinfo(context: &Context, message: &Message, _args: Args) -> Comm
                             COMPUTER_EMOTE,
                             statuses,
                         ))
+                        .image(banner.unwrap_or("NULL".into()))
                         .color(DISCORD_BLUE)
                 })
             })
@@ -128,10 +136,10 @@ pub async fn calc(context: &Context, message: &Message, _args: Args) -> CommandR
                         })
                         .create_button(|button| {
                             button
-                                .label(" ")
+                                .label("MW")
                                 .style(ButtonStyle::Secondary)
-                                .custom_id("nothing-1")
-                                .disabled(true)
+                                .custom_id("calculator_mew")
+                                .disabled(false)
                         })
                     })
                     .create_action_row(|row| {
@@ -161,10 +169,10 @@ pub async fn calc(context: &Context, message: &Message, _args: Args) -> CommandR
                         })
                         .create_button(|button| {
                             button
-                                .label(" ")
+                                .label("MR")
                                 .style(ButtonStyle::Secondary)
-                                .custom_id("nothing0")
-                                .disabled(true)
+                                .custom_id("calculator_mer")
+                                .disabled(false)
                         })
                     })
                     .create_action_row(|row| {
@@ -194,10 +202,10 @@ pub async fn calc(context: &Context, message: &Message, _args: Args) -> CommandR
                         })
                         .create_button(|button| {
                             button
-                                .label(" ")
+                                .label("MC")
                                 .style(ButtonStyle::Secondary)
-                                .custom_id("nothing1")
-                                .disabled(true)
+                                .custom_id("calculator_mec")
+                                .disabled(false)
                         })
                     })
                     .create_action_row(|row| {
@@ -245,6 +253,8 @@ pub async fn calc(context: &Context, message: &Message, _args: Args) -> CommandR
     let context = &context;
 
     let tks = Arc::new(Mutex::new(vec![]));
+    let memory = Arc::new(Mutex::new(String::new()));
+
     let _: Vec<_> = collector
         .then(|it| async {
             if let Some(data) = &it.data {
@@ -257,8 +267,13 @@ pub async fn calc(context: &Context, message: &Message, _args: Args) -> CommandR
                         match tk {
                             calc_util::Token::Result => {
                                 let tks = tks.lock().await;
+
                                 let mut ns = fasteval::EmptyNamespace;
-                                let eval = fasteval::ez_eval(&calc_util::parse_tks(&tks), &mut ns);
+                                let eval = fasteval::ez_eval(
+                                    &calc_util::parse_tks(&tks, &memory).await,
+                                    &mut ns,
+                                );
+                                let inp = calc_util::parse_tks(&tks, &memory).await;
                                 let _ = it
                                     .create_interaction_response(context, |it| {
                                         it.kind(InteractionResponseType::UpdateMessage)
@@ -267,10 +282,7 @@ pub async fn calc(context: &Context, message: &Message, _args: Args) -> CommandR
                                                     embed
                                                         .field(
                                                             "Entrada",
-                                                            format!(
-                                                                "`{}`",
-                                                                calc_util::parse_tks(&tks)
-                                                            ),
+                                                            format!("`{}`", inp),
                                                             true,
                                                         )
                                                         .field(
@@ -292,7 +304,7 @@ pub async fn calc(context: &Context, message: &Message, _args: Args) -> CommandR
                             _ => {
                                 let mut tks = tks.lock().await;
                                 tks.push(tk);
-
+                                let inp = calc_util::parse_tks(&tks, &memory).await;
                                 let _ = it
                                     .create_interaction_response(context, |it| {
                                         it.kind(InteractionResponseType::UpdateMessage)
@@ -301,10 +313,7 @@ pub async fn calc(context: &Context, message: &Message, _args: Args) -> CommandR
                                                     embed
                                                         .field(
                                                             "Entrada",
-                                                            format!(
-                                                                "`{}`",
-                                                                calc_util::parse_tks(&tks)
-                                                            ),
+                                                            format!("`{}`", inp),
                                                             true,
                                                         )
                                                         .field("Saida", "`???`", true)

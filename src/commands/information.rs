@@ -2,9 +2,13 @@ use crate::{
     apis::covid19_brazil_api,
     constants::{colors::DISCORD_BLUE, emotes::*, errors_codes::*},
     containers::{RuskyConfigContainer, ShardManagerContainer},
-    util::misc::get_rust_version,
+    util::{
+        image::random_default_avatar,
+        misc::{get_guild_by_id, get_rust_version},
+    },
 };
 use humansize::{file_size_opts, FileSize};
+use prettytable::*;
 use serenity::{
     builder::CreateEmbed,
     client::bridge::gateway::ShardId,
@@ -24,12 +28,11 @@ use sysinfo::{ProcessExt, System, SystemExt};
 
 #[command]
 #[description("Pong! veja o ping do bot e shard atual.")]
-pub async fn ping(context: &Context, message: &Message, _args: Args) -> CommandResult {
+pub async fn ping(context: &Context, message: &Message, mut args: Args) -> CommandResult {
     let mut message = message
         .reply(context, &format!("{} **·** Carregando...", LOADING_EMOTE))
         .await?;
     let data = context.data.read().await;
-
     let shard_manager = match data.get::<ShardManagerContainer>() {
         Some(v) => v,
         None => {
@@ -44,7 +47,6 @@ pub async fn ping(context: &Context, message: &Message, _args: Args) -> CommandR
             return Ok(());
         }
     };
-
     let config = data.get::<RuskyConfigContainer>().unwrap();
     let shard_amount = config.discord.shard_amount;
     let manager = shard_manager.lock().await;
@@ -63,6 +65,37 @@ pub async fn ping(context: &Context, message: &Message, _args: Args) -> CommandR
             return Ok(());
         }
     };
+    if let Ok(arg) = args.single::<String>() {
+        if arg == *"shards" {
+            let mut table = Table::new();
+            table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+            table.set_titles(row!["ID", "LATENCY", "STAGE", "CURRENT"]);
+            for (shard_id, shard) in runners.iter() {
+                table.add_row(row![
+                    match shard_id {
+                        &ShardId(id) => id + 1,
+                    },
+                    match shard.latency {
+                        Some(latency) => format!("{:?}", latency),
+                        None => "---".into(),
+                    },
+                    shard.stage,
+                    if shard_id == &ShardId(context.shard_id) {
+                        "YES"
+                    } else {
+                        "NO"
+                    }
+                ]);
+            }
+            message
+                .edit(context, |m| {
+                    m.content(format!("```rs\n{}```", table.to_string()))
+                })
+                .await?;
+            return Ok(());
+        }
+    }
+
     let websocket_ping = match shard.latency {
         Some(latency) => format!("{:?}", latency),
         None => "...".into(),
@@ -223,5 +256,55 @@ async fn covidstatus(context: &Context, message: &Message, _args: Args) -> Comma
         .edit(context, |builder| builder.content("").set_embed(embed))
         .await?;
 
+    Ok(())
+}
+#[command]
+#[aliases("guild", "serverinfo")]
+#[description("Informações sobre a sua guilda.")]
+#[only_in(guilds)]
+pub async fn guildinfo(context: &Context, message: &Message, mut args: Args) -> CommandResult {
+    let mut guild: Option<Guild> = None;
+    if let Ok(id) = args.single::<u64>() {
+        if let Ok(cache_guild) = get_guild_by_id(context, id).await {
+            guild = Some(cache_guild);
+        }
+    } else {
+        guild = message.guild(context).await;
+    }
+    if let Some(guild) = guild {
+        let mut message = message
+            .reply(context, format!("{} **·** Carregando...", LOADING_EMOTE))
+            .await?;
+        let mut embed = CreateEmbed::default();
+        embed.title(format!("informações de {}", guild.name));
+        if let Some(banner_url) = &guild.banner_url() {
+            embed.image(banner_url);
+        }
+
+        embed.thumbnail(guild.icon_url().unwrap_or(random_default_avatar()));
+        embed.color(DISCORD_BLUE);
+        embed.description(format!(
+            "ID: `{}`\nDescrição: `{}`\nQuantidade de membros: `{}/{} ({}%)`\nDono: <@{}> \
+             ({})\nUrl Pessoal: `{}`",
+            guild.id,
+            guild
+                .description
+                .unwrap_or("Servidor sem descrição.".into()),
+            guild.member_count,
+            guild.max_members.unwrap_or(10000),
+            (100 * guild.member_count) / guild.max_members.unwrap_or(10000),
+            guild.owner_id,
+            guild.owner_id,
+            if let Some(url) = guild.vanity_url_code {
+                format!("discord.gg/{}", url)
+            } else {
+                "não tem.".into()
+            }
+        ));
+
+        message
+            .edit(context, |m| m.content("").set_embed(embed))
+            .await?;
+    }
     Ok(())
 }

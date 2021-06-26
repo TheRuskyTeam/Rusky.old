@@ -5,7 +5,7 @@ use information::*;
 use utils::*;
 #[group]
 #[summary("Comandos de informação")]
-#[commands(ping, botinfo, covidstatus)]
+#[commands(ping, botinfo, covidstatus, guildinfo)]
 struct Information;
 #[group]
 #[summary("Comandos para ajudar")]
