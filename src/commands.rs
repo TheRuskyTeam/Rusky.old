@@ -1,6 +1,8 @@
 use crate::{acmd, nh};
 use serenity::{async_trait, client::Context};
 pub mod information;
+pub mod misc;
+use misc::*;
 use information::*;
 use log::error;
 use serenity::{
@@ -52,7 +54,9 @@ impl CommandManager
     pub fn init() -> Self
     {
         let mut commands: HashMap<String, Box<dyn SlashCommand + Sync + Send>> = nh!();
+
         acmd!(commands <== PingCommand);
+        acmd!(commands <== CatCommand);
         Self { commands }
     }
 
