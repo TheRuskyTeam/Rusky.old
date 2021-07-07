@@ -1,0 +1,10 @@
+use std::error::Error;
+pub mod commands;
+pub mod config;
+pub mod containers;
+pub mod events;
+pub mod rusky;
+pub mod util;
+pub type AnyError = Box<dyn Error + Sync + Send + 'static>;
+pub type RuskyResult<T> = Result<T, AnyError>;
+pub mod macros;

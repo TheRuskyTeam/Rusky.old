@@ -1,4 +1,4 @@
-# Rusky
+# Rusky v2
 ## Um simples bot para o discord!
 ![](https://tokei.rs/b1/github/ruskybot/rusky)
 # 🚀 Executando 
