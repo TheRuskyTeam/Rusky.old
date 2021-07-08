@@ -50,8 +50,7 @@ macro_rules! setup {
             }}
     };
 }
-pub mod commands
-{
+pub mod commands {
     #[macro_export]
     macro_rules! acmd {
         ($hash:ident <== $command:ident) => {
@@ -86,8 +85,7 @@ pub mod commands
     }
 }
 
-pub mod util
-{
+pub mod util {
 
     #[macro_export]
     macro_rules! nh {

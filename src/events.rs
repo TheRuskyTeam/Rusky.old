@@ -10,29 +10,24 @@ use serenity::{
 };
 pub struct Handler;
 #[async_trait]
-impl EventHandler for Handler
-{
-    async fn interaction_create(&self, context: Context, interaction: Interaction)
-    {
-        if let Interaction::ApplicationCommand(command) = interaction.clone()
-        {
+impl EventHandler for Handler {
+    async fn interaction_create(&self, context: Context, interaction: Interaction) {
+        if let Interaction::ApplicationCommand(command) = interaction.clone() {
             let c_context = context.clone();
+            let _ = context.idle().await;
+
             let data = &c_context.data.read().await;
-            if let Some(manager_arc) = data.get::<CommandManagerContainer>()
-            {
+            if let Some(manager_arc) = data.get::<CommandManagerContainer>() {
                 {
                     let manager = &manager_arc.lock().await;
-                    if manager.commands.contains_key(&command.data.name)
-                    {
+                    if manager.commands.contains_key(&command.data.name) {
                         manager
                             .run_command(&command.data.name, &SlashCommandContext {
                                 client: context,
                                 interaction,
                             })
                             .await;
-                    }
-                    else
-                    {
+                    } else {
                         warn!("Missing {} in slash commands.", command.data.name);
                     }
                 }
@@ -40,8 +35,7 @@ impl EventHandler for Handler
         }
     }
 
-    async fn ready(&self, context: Context, bot: Ready)
-    {
+    async fn ready(&self, context: Context, bot: Ready) {
         let data = &context.data.read().await;
         let command_manager = data
             .get::<CommandManagerContainer>()
@@ -49,15 +43,12 @@ impl EventHandler for Handler
         {
             let lock = &command_manager.lock().await;
 
-            for (name, command) in &lock.commands
-            {
+            for (name, command) in &lock.commands {
                 let info = &command.information();
                 ApplicationCommand::create_global_application_command(&context, |c| {
                     c.name(name).description(&info.description);
-                    if let Some(options) = &info.options
-                    {
-                        for option in options
-                        {
+                    if let Some(options) = &info.options {
+                        for option in options {
                             c.add_option(option.to_owned());
                         }
                     };

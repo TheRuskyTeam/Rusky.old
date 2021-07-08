@@ -1,41 +1,29 @@
-pub mod date
-{
-    pub fn str_to_seconds(s: &str) -> u64
-    {
+pub mod date {
+    pub fn str_to_seconds(s: &str) -> u64 {
         let split = s.split_whitespace().collect::<Vec<&str>>();
         let mut total_seconds = 0;
-        for s in split
-        {
-            if let Some(chr) = s.chars().last()
-            {
-                match chr
-                {
-                    'm' =>
-                    {
+        for s in split {
+            if let Some(chr) = s.chars().last() {
+                match chr {
+                    'm' => {
                         let s = s.replace("m", "");
-                        if let Ok(m) = s.parse::<u64>()
-                        {
+                        if let Ok(m) = s.parse::<u64>() {
                             total_seconds += m * 60;
                         }
                     }
-                    's' =>
-                    {
+                    's' => {
                         let s = s.replace("s", "");
-                        if let Ok(s) = s.parse::<u64>()
-                        {
+                        if let Ok(s) = s.parse::<u64>() {
                             total_seconds += s;
                         }
                     }
-                    'h' =>
-                    {
+                    'h' => {
                         let s = s.replace("s", "");
-                        if let Ok(h) = s.parse::<u64>()
-                        {
+                        if let Ok(h) = s.parse::<u64>() {
                             total_seconds += h * 3600;
                         }
                     }
-                    _ =>
-                    {}
+                    _ => {}
                 }
             }
         }
@@ -43,10 +31,8 @@ pub mod date
     }
 }
 use yansi::Paint;
-pub fn format_log_message(level: String, target: String, date: String, message: String) -> String
-{
-    let level: String = match level.as_str()
-    {
+pub fn format_log_message(level: String, target: String, date: String, message: String) -> String {
+    let level: String = match level.as_str() {
         "DEBUG" => Paint::new("debug").bold().to_string(),
         "INFO" => Paint::cyan("information").bold().to_string(),
         "ERROR" => Paint::red("error").bold().to_string(),
@@ -63,17 +49,13 @@ pub fn format_log_message(level: String, target: String, date: String, message: 
     );
     log
 }
-trait StringUtils
-{
+trait StringUtils {
     fn captilize(&self) -> Self;
 }
-impl StringUtils for String
-{
-    fn captilize(&self) -> Self
-    {
+impl StringUtils for String {
+    fn captilize(&self) -> Self {
         let mut c = self.chars();
-        match c.next()
-        {
+        match c.next() {
             None => String::new(),
             Some(f) => f.to_uppercase().chain(c).collect(),
         }

@@ -1,17 +1,13 @@
 use clap::clap_app;
 use rusky::{rusky::Rusky, setup};
 #[tokio::main]
-async fn main()
-{
+async fn main() {
     setup!();
     let config_file_path: String;
     let file_exists = |path: String| {
-        if std::fs::metadata(path).is_ok()
-        {
+        if std::fs::metadata(path).is_ok() {
             Ok(())
-        }
-        else
-        {
+        } else {
             Err(String::from("File doesn't exist."))
         }
     };
@@ -30,8 +26,7 @@ async fn main()
         )
     )
     .get_matches();
-    if let Some(sub) = matches.subcommand_matches("run")
-    {
+    if let Some(sub) = matches.subcommand_matches("run") {
         config_file_path = sub.value_of("config").unwrap_or("./Rusky.toml").to_string();
         let mut rusky = Rusky::new(&config_file_path)
             .await
