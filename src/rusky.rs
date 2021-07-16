@@ -1,20 +1,24 @@
+use std::sync::Arc;
+
+use log::info;
+use serenity::Client;
+use tokio::sync::Mutex;
+
 use crate::{
-    commands::CommandManager,
+    commands::{CommandManager, ReadyOptions},
     config::Config,
-    containers::CommandManagerContainer,
+    containers::{CommandManagerContainer, ReadyOptionsContainer},
     RuskyResult,
     *,
 };
-use log::info;
-use serenity::Client;
-use std::sync::Arc;
-use tokio::sync::Mutex;
+
 pub struct Rusky {
     pub client: Client,
     pub config: Config,
 }
+
 impl Rusky {
-    pub async fn new(cfg_file_path: &str) -> RuskyResult<Self> {
+    pub async fn new(cfg_file_path: &str, ready_options: ReadyOptions) -> RuskyResult<Self> {
         let config = Config::load(cfg_file_path)?;
         let client = Client::builder(&config.discord.token)
             .event_handler(events::Handler)
@@ -25,6 +29,7 @@ impl Rusky {
             data.insert::<CommandManagerContainer>(Arc::clone(&Arc::new(Mutex::new(
                 CommandManager::init(),
             ))));
+            data.insert::<ReadyOptionsContainer>(Arc::new(ready_options));
         }
         Ok(Self { config, client })
     }

@@ -1,2 +1,2 @@
-pub mod meow;
 pub use meow::MeowApi;
+pub mod meow;

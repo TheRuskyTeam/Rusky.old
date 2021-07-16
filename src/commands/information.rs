@@ -1,11 +1,11 @@
-use crate::slash_command;
+use crate::slash;
+
 pub struct PingCommand;
-slash_command! {
-     for: PingCommand,
-     name: "ping",
-     description: "Veja o ping do bot",
-     options: None,
-     execute: (context) => {
-        context.reply("Hello world").await?;
-     }
-}
+slash!(PingCommand =>
+     (@name: "ping")
+     (@description: "Pong!")
+     (@execute: (context) => {
+
+          context.reply("pong!").await?;
+     })
+);
