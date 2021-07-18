@@ -6,6 +6,6 @@ all:
 	$(CARGO) build --quiet # Build
 fix:
 	$(CARGO) clippy -Z unstable-options --fix --allow-dirty -q
-	$(CARFO) fix -q --allow-dirty
+	$(CARGO) fix -q --allow-dirty
 run: all
 	$(BOT_DEBUG) run
