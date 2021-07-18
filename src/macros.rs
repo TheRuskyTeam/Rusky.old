@@ -53,7 +53,7 @@ macro_rules! setup {
 pub mod commands {
     #[macro_export]
     macro_rules! acmd {
-        ($hash:ident <== $command:ident) => {
+        ($hash:ident <= = $command:ident) => {
             $hash.insert($command::information(&$command).name, Box::new($command))
         };
     }

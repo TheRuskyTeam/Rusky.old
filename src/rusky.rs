@@ -5,11 +5,11 @@ use serenity::Client;
 use tokio::sync::Mutex;
 
 use crate::{
-    *,
     commands::{CommandManager, ReadyOptions},
     config::Config,
     containers::{CommandManagerContainer, ReadyOptionsContainer},
     RuskyResult,
+    *,
 };
 
 pub struct Rusky {

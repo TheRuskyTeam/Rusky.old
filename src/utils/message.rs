@@ -1,4 +1,4 @@
-use std::{future::Future, time::Duration};
+use crate::{commands::SlashCommandContext, errors::NoneError, RuskyResult};
 use futures::StreamExt;
 use log::error;
 use serenity::{
@@ -6,13 +6,13 @@ use serenity::{
     collector::ComponentInteractionCollectorBuilder,
     model::interactions::InteractionResponseType::*,
 };
-use crate::{commands::SlashCommandContext, errors::NoneError, RuskyResult};
+use std::{future::Future, time::Duration};
 
 pub async fn yes_no_menu<YFut, NFut, Y, N>(
     context: &SlashCommandContext,
     embed: &CreateEmbed,
     on_yes: Y,
-    on_no:  N,
+    on_no: N,
 ) -> RuskyResult<()>
 where
     Y: Fn() -> YFut,

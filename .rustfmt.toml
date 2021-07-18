@@ -1,6 +1,7 @@
 edition = "2018"
 fn_single_line = true
-format_macro_matchers = false
+format_macro_matchers = true
+binop_separator = "Back"
 format_strings = true
 imports_layout = "HorizontalVertical"
 imports_granularity = "Crate"

@@ -5,19 +5,21 @@ use serenity::{
     async_trait,
     builder::{CreateApplicationCommandOption, CreateEmbed},
     client::Context,
-    model::interactions::{Interaction, InteractionResponseType},
-};
-use serenity::model::{
-    interactions::InteractionApplicationCommandCallbackDataFlags,
-    prelude::application_command::ApplicationCommandInteraction,
+    model::{
+        interactions::{
+            Interaction,
+            InteractionApplicationCommandCallbackDataFlags,
+            InteractionResponseType,
+        },
+        prelude::application_command::ApplicationCommandInteraction,
+    },
 };
 
 use information::*;
 use misc::*;
 use moderation::*;
 
-use crate::{acmd, nh};
-use crate::constants::colors::*;
+use crate::{acmd, constants::colors::*, nh};
 
 pub mod information;
 pub mod misc;
@@ -49,7 +51,9 @@ impl SlashCommandContext {
     async fn update_embed(&self, embed: CreateEmbed) -> crate::RuskyResult<()> {
         self.command
             .edit_original_interaction_response(&self.client, |response| {
-                response.set_embeds(vec![embed]).components(|c| c.set_action_rows(vec![]))
+                response
+                    .set_embeds(vec![embed])
+                    .components(|c| c.set_action_rows(vec![]))
             })
             .await?;
         Ok(())
