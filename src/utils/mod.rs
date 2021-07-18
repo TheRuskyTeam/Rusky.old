@@ -1,3 +1,8 @@
+use yansi::Paint;
+
+pub mod guild;
+pub mod message;
+
 pub mod date {
     pub fn str_to_seconds(s: &str) -> u64 {
         let split = s.split_whitespace().collect::<Vec<&str>>();
@@ -30,7 +35,7 @@ pub mod date {
         total_seconds
     }
 }
-use yansi::Paint;
+
 pub fn format_log_message(level: String, target: String, date: String, message: String) -> String {
     let level: String = match level.as_str() {
         "DEBUG" => Paint::new("debug").bold().to_string(),
@@ -49,11 +54,13 @@ pub fn format_log_message(level: String, target: String, date: String, message: 
     );
     log
 }
+
 trait StringUtils {
-    fn captilize(&self) -> Self;
+    fn capitalize(&self) -> Self;
 }
+
 impl StringUtils for String {
-    fn captilize(&self) -> Self {
+    fn capitalize(&self) -> Self {
         let mut c = self.chars();
         match c.next() {
             None => String::new(),

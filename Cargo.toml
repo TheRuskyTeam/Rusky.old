@@ -1,6 +1,6 @@
 [package]
 name = "rusky"
-version = "0.1.0"
+version = "0.1.2"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -13,21 +13,23 @@ rustc_version = "0.4.0"
 sysinfo = "0.18.2"
 humansize = "1.1.1"
 rand = "0.8.4"
-isahc = "1.4.0"
+reqwest = { version = "0.11", default-features = false, features = ["rustls-tls"] }
 log = "0.4.14"
 serde_json = "1.0"
 fasteval = "0.2.4"
 yansi = "0.5.0"
 futures = "0.3.15"
 prettytable-rs = "0.8.0"
+clap = "2.33.3"
 
 [dependencies.serde]
 version = "1.0"
 features = ["derive"]
 
 [dependencies.serenity]
-version = "0.10.8"
-features = ["client", "collector",  "gateway", "standard_framework","rustls_backend", "model", "unstable_discord_api"]
+git = "https://github.com/serenity-rs/serenity.git"
+default-features = false
+features = ["client", "collector", "gateway", "rustls_backend", "model", "cache", "unstable_discord_api"]
 
 [dependencies.tokio]
 version = "1.6.1"
