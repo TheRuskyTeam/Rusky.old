@@ -1,12 +1,15 @@
 use serenity::builder::CreateEmbed;
-
 use crate::{
-    constants::colors::{BLUE, MATERIAL_RED},
+    constants::{
+        colors::{BLUE, MATERIAL_RED},
+        emotes::RUSKY_CHECK,
+    },
     errors::NoneError,
     get_arg,
     slash,
     utils::{guild::get_guild_owner, message::yes_no_menu},
 };
+
 pub struct BanCommand;
 slash!(BanCommand =>
     (@name: "ban")
@@ -34,18 +37,25 @@ slash!(BanCommand =>
             } else if !me_permissions.ban_members() {
                 context.reply_error("Eu preciso da permissão `Banir membros` para executar esse comando.").await?;
             } else {
-            	//TODO: Fazer isso funfar kkk
-                // let ban_member = yes_no_menu(&context, CreateEmbed::default()
-                            // .color(MATERIAL_RED).description(format!("Você deseja realmente banir <@{}>?", user_to_ban.id.as_u64()))).await?;
-                // if ban_member {
-                   // 
-                    // context.update_embed(CreateEmbed::default().description(format!("<@{}> foi punido.", user_to_ban.id.as_u64())).color(BLUE).to_owned()).await?;
-                // } else {
-                    // context.update_embed(CreateEmbed::default().description("Banimento cancelado.").color(BLUE).to_owned()).await?;
-                // }
- 				member_to_ban.ban_with_reason(&context.client, 7, reason).await?;
- 				context.reply("Membro banido.").await?;
- 				
+                yes_no_menu(&context, CreateEmbed::default()
+                            .color(MATERIAL_RED)
+                            .description(format!("Você deseja realmente banir <@{}>?",
+                            user_to_ban.id.as_u64())),
+                            || async {
+                                member_to_ban.ban_with_reason(&context.client, 7, &reason).await?;
+                                context.update_embed(CreateEmbed::default()
+                                .description(format!("{} **·** <@{}> foi banido.",
+                                             RUSKY_CHECK,
+                                             user_to_ban.id.as_u64()))
+                                             .color(BLUE).to_owned()).await?;
+                                Ok(())
+                            },
+                            || async {
+                                context.update_embed(CreateEmbed::default()
+                                        .description("Banimento cancelado.")
+                                        .color(MATERIAL_RED).to_owned()).await?;
+                                Ok(())
+                            }).await?;
             }
         } else {
             context.reply_error("Esse comando só pode ser executado em uma guilda.").await?;

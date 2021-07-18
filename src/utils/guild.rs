@@ -1,8 +1,9 @@
-use crate::RuskyResult;
 use serenity::{
     client::Context,
     model::id::{GuildId, UserId},
 };
+
+use crate::RuskyResult;
 
 pub async fn get_guild_owner(context: &Context, guild: &GuildId) -> RuskyResult<UserId> {
     match context.cache.guild(guild).await {

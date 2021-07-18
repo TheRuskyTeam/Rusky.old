@@ -1,6 +1,7 @@
+use yansi::Paint;
+
 pub mod guild;
 pub mod message;
-use yansi::Paint;
 
 pub mod date {
     pub fn str_to_seconds(s: &str) -> u64 {

@@ -25,14 +25,14 @@ async fn main() {
              (about: "TODO")
         )
     )
-    .get_matches();
+        .get_matches();
     if let Some(sub) = matches.subcommand_matches("run") {
         config_file_path = sub.value_of("config").unwrap_or("./Rusky.toml").to_string();
         let mut rusky = Rusky::new(&config_file_path, ReadyOptions {
             update_commands: sub.is_present("update"),
         })
-        .await
-        .expect("Failed to create client");
+            .await
+            .expect("Failed to create client");
         rusky.login().await.expect("Client error");
     }
 }

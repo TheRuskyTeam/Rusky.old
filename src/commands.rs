@@ -1,17 +1,5 @@
-pub mod information;
-pub mod misc;
-pub mod moderation;
-use crate::{acmd, nh};
-use information::*;
-use misc::*;
-use moderation::*;
-use serenity::model::{
-    interactions::InteractionApplicationCommandCallbackDataFlags,
-    prelude::application_command::ApplicationCommandInteraction,
-};
 use std::{collections::HashMap, fmt::Display};
 
-use crate::constants::colors::*;
 use log::error;
 use serenity::{
     async_trait,
@@ -19,10 +7,26 @@ use serenity::{
     client::Context,
     model::interactions::{Interaction, InteractionResponseType},
 };
+use serenity::model::{
+    interactions::InteractionApplicationCommandCallbackDataFlags,
+    prelude::application_command::ApplicationCommandInteraction,
+};
+
+use information::*;
+use misc::*;
+use moderation::*;
+
+use crate::{acmd, nh};
+use crate::constants::colors::*;
+
+pub mod information;
+pub mod misc;
+pub mod moderation;
 
 pub struct ReadyOptions {
     pub update_commands: bool,
 }
+
 pub struct SlashCommandMetaData {
     pub name: String,
     pub description: String,
@@ -44,10 +48,8 @@ impl SlashCommandContext {
 
     async fn update_embed(&self, embed: CreateEmbed) -> crate::RuskyResult<()> {
         self.command
-            .create_interaction_response(&self.client, |response| {
-                response
-                    .interaction_response_data(|message| message.add_embed(embed))
-                    .kind(InteractionResponseType::UpdateMessage)
+            .edit_original_interaction_response(&self.client, |response| {
+                response.set_embeds(vec![embed]).components(|c| c.set_action_rows(vec![]))
             })
             .await?;
         Ok(())

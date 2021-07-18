@@ -46,8 +46,8 @@ impl EventHandler for Handler {
                         };
                         c
                     })
-                    .await
-                    .expect("failed to create command");
+                        .await
+                        .expect("failed to create command");
                 }
             }
         }
