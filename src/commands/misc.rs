@@ -2,7 +2,7 @@ use serenity::builder::CreateEmbed;
 
 use crate::{apis::MeowApi, commands::SlashCommandContext, slash, RuskyResult};
 
-pub fn run(context: &SlashCommandContext) -> RuskyResult<()> {
+pub async fn run_cat(context: &SlashCommandContext) -> RuskyResult<()> {
     let cat = MeowApi::fetch().await?.file;
     context
         .reply_embed(
@@ -17,5 +17,5 @@ pub struct CatCommand;
 slash!(CatCommand =>
     (@name: "gato")
     (@description: "mostra uma foto de um gato")
-    (@execute: (context) => { run().await?; })
+    (@execute: (c) => { run_cat(c).await?; } )
 );

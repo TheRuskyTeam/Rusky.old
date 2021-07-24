@@ -37,3 +37,7 @@ features = ["client", "collector", "gateway", "rustls_backend", "model", "cache"
 [dependencies.tokio]
 version = "1.6.1"
 features = ["macros", "signal", "rt-multi-thread"]
+[profile.release]
+incremental = true
+[profile.dev]
+incremental = true

@@ -1,5 +1,4 @@
 use crate::slash;
-
 pub struct PingCommand;
 slash!(PingCommand =>
      (@name: "ping")
