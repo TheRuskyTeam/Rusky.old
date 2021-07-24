@@ -1,5 +1,6 @@
 use std::{fs::File, io::Read};
-
+use std::env::set_var;
+use std::env::var;
 use serde::Deserialize;
 
 use crate::RuskyResult;
@@ -28,6 +29,9 @@ impl Config {
         let mut file = File::open(path)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
-        Ok(toml::from_str(&contents)?)
+        let config: Self = toml::from_str(&contents)?;
+        set_var("DISCORD_TOKEN", config.discord.token);
+        assert!(var("DISCORD_TOKEN").is_ok());
+        Ok(config)
     }
 }
