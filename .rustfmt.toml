@@ -1,4 +1,4 @@
-edition = "2018"
+edition = "2021"
 fn_single_line = true
 format_macro_matchers = true
 binop_separator = "Back"

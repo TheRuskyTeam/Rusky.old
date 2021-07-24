@@ -108,6 +108,7 @@ impl CommandManager {
         acmd!(commands <== PingCommand);
         acmd!(commands <== CatCommand);
         acmd!(commands <== BanCommand);
+        acmd!(commands <== UserInfoCommand);
         Self { commands }
     }
 

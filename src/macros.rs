@@ -93,7 +93,7 @@ pub mod commands {
             $to_impl:ident =>
             (@name: $slash_command_name:expr)
             (@description: $slash_command_description:expr)
-            (@execute: ($context:ident) => $command_block:block)
+            (@execute: $func:ident)
         ) => {
             #[serenity::async_trait]
             impl crate::commands::SlashCommand for $to_impl {
@@ -104,9 +104,8 @@ pub mod commands {
                         options: None
                     }
                 }
-                async fn execute(&self, $context: &crate::commands::SlashCommandContext) -> crate::RuskyResult<()> {
-                    $command_block
-                    Ok(())
+                async fn execute(&self, c: &crate::commands::SlashCommandContext) -> crate::RuskyResult<()> {
+                    $func(c).await
                 }
             }
         };
@@ -117,7 +116,7 @@ pub mod commands {
             $(
               (@arg $arg_name:expr, $arg_type:ident: $arg_description:expr)
             )*
-            (@execute: ($context:ident) => $command_block:block)
+            (@execute: $func:ident)
         ) => {
              #[serenity::async_trait]
             impl crate::commands::SlashCommand for $to_impl {
@@ -134,9 +133,8 @@ pub mod commands {
                         })
                     }
                 }
-                async fn execute(&self, $context: &crate::commands::SlashCommandContext) -> crate::RuskyResult<()> {
-                    $command_block
-                    Ok(())
+                async fn execute(&self, c: &crate::commands::SlashCommandContext) -> crate::RuskyResult<()> {
+                    $func(c).await
                 }
             }
         };

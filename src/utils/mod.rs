@@ -1,8 +1,8 @@
 use yansi::Paint;
-
 pub mod guild;
 pub mod message;
-
+pub mod time;
+pub mod user;
 pub mod date {
     pub fn str_to_seconds(s: &str) -> u64 {
         let split = s.split_whitespace().collect::<Vec<&str>>();

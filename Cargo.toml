@@ -41,3 +41,5 @@ features = ["macros", "signal", "rt-multi-thread"]
 incremental = true
 [profile.dev]
 incremental = true
+[dev-dependencies]
+tokio-test = "0.4.2"

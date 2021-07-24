@@ -12,7 +12,7 @@ use crate::{
 };
 use serenity::builder::CreateEmbed;
 pub struct BanCommand;
-pub async fn run_ban(context: &SlashCommandContext) -> RuskyResult<()> {
+pub async fn ban(context: &SlashCommandContext) -> RuskyResult<()> {
     if context.command.guild_id.is_some() {
         let member_to_get = &context.command.data.options.get(0);
         let reason_to_get = &context.command.data.options.get(1);
@@ -27,7 +27,7 @@ pub async fn run_ban(context: &SlashCommandContext) -> RuskyResult<()> {
             .await?;
         let me_permissions = me.permissions(&context.client).await?;
         let member_to_ban = &guild.member(&context.client, user_to_ban).await?;
-            let author_permissions = &context
+        let author_permissions = &context
             .command
             .member
             .as_ref()
@@ -105,7 +105,7 @@ pub async fn run_ban(context: &SlashCommandContext) -> RuskyResult<()> {
         }
     } else {
         context
-            .reply_error("Esse comando só pode ser executado em uma guilda.")
+            .reply_error("Você só pode executar esse comando em uma guilda.")
             .await?;
     }
     Ok(())
@@ -115,5 +115,5 @@ slash!(BanCommand =>
     (@description: "bane um membro")
     (@arg "membro", User: "Membro para banir")
     (@arg "motivo", OptionText: "Motivo para banir")
-    (@execute: (c) => { run_ban(c).await?; })
+    (@execute: ban)
 );

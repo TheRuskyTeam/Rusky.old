@@ -1,3 +1,4 @@
+#![feature(format_args_capture)]
 use std::error::Error;
 
 pub mod apis;
