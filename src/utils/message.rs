@@ -58,10 +58,8 @@ where
                 if let Err(err) = on_yes().await {
                     error!("{:?}", err);
                 }
-            } else {
-                if let Err(err) = on_no().await {
-                    error!("{:?}", err);
-                }
+            } else if let Err(err) = on_no().await {
+                error!("{:?}", err);
             }
         })
         .collect()

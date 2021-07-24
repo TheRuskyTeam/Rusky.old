@@ -64,7 +64,7 @@ pub async fn run_ban(context: &SlashCommandContext) -> RuskyResult<()> {
                 .await?;
         } else {
             yes_no_menu(
-                &context,
+                context,
                 CreateEmbed::default()
                     .color(MATERIAL_RED)
                     .description(format!(
