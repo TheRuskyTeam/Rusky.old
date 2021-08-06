@@ -7,7 +7,7 @@ pub struct UserProfile {
     pub banner: Option<String>,
     pub id: String,
     pub banner_color: Option<String>,
-    pub accent_color: Option<String>,
+    pub accent_color: Option<u64>,
 }
 pub async fn get_user_profile(discord_user_id: u64) -> RuskyResult<UserProfile> {
     let token = get_env_var("DISCORD_TOKEN")?;

@@ -4,7 +4,8 @@ use log::error;
 use serenity::{
     async_trait,
     builder::{CreateApplicationCommandOption, CreateEmbed},
-    client::Context,
+    client::{Cache, Context},
+    http::{CacheHttp, Http},
     model::{
         interactions::{
             Interaction,
@@ -39,6 +40,17 @@ pub struct SlashCommandContext {
     pub client: Context,
     pub interaction: Interaction,
     pub command: ApplicationCommandInteraction,
+}
+impl AsRef<Http> for SlashCommandContext {
+    fn as_ref(&self) -> &Http { &self.client.http }
+}
+impl AsRef<Cache> for SlashCommandContext {
+    fn as_ref(&self) -> &Cache { &self.client.cache }
+}
+impl CacheHttp for SlashCommandContext {
+    fn cache(&self) -> Option<&std::sync::Arc<Cache>> { Some(&self.client.cache) }
+
+    fn http(&self) -> &Http { &self.client.http }
 }
 
 impl SlashCommandContext {

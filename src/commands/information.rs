@@ -1,5 +1,12 @@
-use crate::{commands::SlashCommandContext, errors::NoneError, get_arg, slash, utils, RuskyResult};
-use crate::constants::colors::BLUE;
+use crate::{
+    commands::SlashCommandContext,
+    constants::colors::BLUE,
+    errors::NoneError,
+    get_arg,
+    slash,
+    utils,
+    RuskyResult,
+};
 use serenity::builder::CreateEmbed;
 pub struct PingCommand;
 pub struct UserInfoCommand;
@@ -7,8 +14,9 @@ pub struct UserInfoCommand;
 pub async fn userinfo(context: &SlashCommandContext) -> RuskyResult<()> {
     if context.command.guild_id.is_some() {
         let member_to_get_information = context.command.data.options.get(0);
-        let (user, member) = get_arg!(member_to_get_information, User).ok_or(NoneError)?;
-        let member = member.as_ref().ok_or(NoneError)?;
+        let (user, _) = get_arg!(member_to_get_information, User).ok_or(NoneError)?;
+        let guild = context.command.guild_id.ok_or(NoneError)?;
+        let member = guild.member(&context, user.id).await?;
         let user_name = &user.name;
         let user_profile = utils::user::get_user_profile(*user.id.as_u64()).await?;
         let user_banner = utils::user::get_user_banner_url(&user_profile).await;
@@ -17,27 +25,49 @@ pub async fn userinfo(context: &SlashCommandContext) -> RuskyResult<()> {
         let user_created_at = utils::time::get_discord_relative_time(user.created_at().timestamp());
         let user_tag = user.tag();
         let mut embed = CreateEmbed::default();
+        let mut high_color: Option<_> = None;
+
+        if let Some((id, _)) = member.highest_role_info(&context).await {
+            if let Some(role) = context.client.cache.role(&guild, id).await {
+                high_color = Some(role.colour);
+            } else {
+                let roles = guild.roles(&context).await?;
+                if let Some(r) = roles.get(&id) {
+                    high_color = Some(r.colour)
+                }
+            }
+        }
+
         embed.title(format!("informações de {user_name}"));
         if let Ok(banner_url) = user_banner {
             embed.image(banner_url);
         }
-        if let Some( banner_color ) = &user_profile.banner_color {
-            if let Ok(hex) = banner_color.parse::<u64>() {
+        if let Some(accent_color) = &user_profile.accent_color {
+            embed.color(*accent_color);
+        } else if let Some(banner_color) = &user_profile.banner_color {
+            let mut hex = String::new();
+            hex::decode(banner_color.replace("#", ""))?
+                .into_iter()
+                .for_each(|i| hex += &format!("{i}"));
+            if let Ok(hex) = hex.parse::<u64>() {
                 embed.color(hex);
             }
-        } else if let Some( accent_color ) = &user_profile.accent_color {
-            if let Ok(hex) = accent_color.parse::<u64>() {
-                embed.color(hex);
-            }
+        } else if let Some(c) = high_color {
+            embed.color(c);
         } else {
             embed.color(BLUE);
         }
-        embed.thumbnail(user.avatar_url().unwrap_or(utils::user::random_discord_default_avatar()));
-        embed.description(format!(r#"
+        embed.thumbnail(
+            user.avatar_url()
+                .unwrap_or(utils::user::random_discord_default_avatar()),
+        );
+        embed.description(format!(
+            r#"
         Tag: {user_tag}
         Conta Criada: {user_created_at}
         Entrou: {user_joined_at}
-        "#));
+        "#
+        ));
         context.reply_embed(&mut embed).await?;
     } else {
         context
