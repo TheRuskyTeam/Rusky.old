@@ -1,7 +1,0 @@
-[discord]
-token = "" # your bot token here
-id = 0 # your bot id here
-auto_sharded = true # auto shard
-shard_amount = 0 # if auto_sharded is false Rusky will start with this shard amount.
-[api]
-update_interval = "5m 2s" # api data fetcher update interval

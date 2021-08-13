@@ -5,8 +5,7 @@ use crate::{
         emotes::RUSKY_CHECK,
     },
     errors::NoneError,
-    get_arg,
-    slash,
+    macros::commands::*,
     utils::{guild::get_guild_owner, message::yes_no_menu},
     RuskyResult,
 };
@@ -36,9 +35,7 @@ pub async fn ban(context: &SlashCommandContext) -> RuskyResult<()> {
             .await?;
         if !author_permissions.ban_members() {
             context
-                .reply_error(
-                    "Você precisa da permissão `Banir membros` para poder executar esse comando!",
-                )
+                .reply("err? You need the `Ban members` Permission")
                 .await?;
         } else if get_guild_owner(&context.client, &guild)
             .await?
@@ -48,19 +45,17 @@ pub async fn ban(context: &SlashCommandContext) -> RuskyResult<()> {
             user_to_ban.id
         {
             context
-                .reply_error("Porque você está tentando banir o dono do servidor?")
+                .reply("err? Why are you trying to ban the server owner?")
                 .await?;
         } else if member_to_ban
             .permissions(&context.client)
             .await?
             .administrator()
         {
-            context
-                .reply_error("Você não pode banir um administrador.")
-                .await?;
+            context.reply("err? You cannot ban a moderator.").await?;
         } else if !me_permissions.ban_members() {
             context
-                .reply_error("Eu preciso da permissão `Banir membros` para executar esse comando.")
+                .reply("err? I Need the `Ban permission` to run this command.")
                 .await?;
         } else {
             yes_no_menu(
@@ -68,7 +63,7 @@ pub async fn ban(context: &SlashCommandContext) -> RuskyResult<()> {
                 CreateEmbed::default()
                     .color(MATERIAL_RED)
                     .description(format!(
-                        "Você deseja realmente banir <@{}>?",
+                        "do you really want to ban <@{}>?",
                         user_to_ban.id.as_u64()
                     )),
                 || async {
@@ -79,7 +74,7 @@ pub async fn ban(context: &SlashCommandContext) -> RuskyResult<()> {
                         .update_embed(
                             CreateEmbed::default()
                                 .description(format!(
-                                    "{} **·** <@{}> foi banido.",
+                                    "{} **·** <@{}> has been banned",
                                     RUSKY_CHECK,
                                     user_to_ban.id.as_u64()
                                 ))
@@ -93,7 +88,7 @@ pub async fn ban(context: &SlashCommandContext) -> RuskyResult<()> {
                     context
                         .update_embed(
                             CreateEmbed::default()
-                                .description("Banimento cancelado.")
+                                .description("Ban cancelled.")
                                 .color(MATERIAL_RED)
                                 .to_owned(),
                         )
@@ -105,15 +100,15 @@ pub async fn ban(context: &SlashCommandContext) -> RuskyResult<()> {
         }
     } else {
         context
-            .reply_error("Você só pode executar esse comando em uma guilda.")
+            .reply("err? You need to run this command in a guild.")
             .await?;
     }
     Ok(())
 }
 slash!(BanCommand =>
     (@name: "ban")
-    (@description: "bane um membro")
-    (@arg "membro", User: "Membro para banir")
-    (@arg "motivo", OptionText: "Motivo para banir")
+    (@description: "ban a member")
+    (@arg "membro", User: "member to ban")
+    (@arg "motivo", OptionText: "reason to ban")
     (@execute: ban)
 );

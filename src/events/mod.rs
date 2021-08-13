@@ -35,24 +35,45 @@ impl EventHandler for Handler {
 
             if ready_options.update_commands || commands.len() != lock.commands.len() {
                 info!("updating slash commands...");
-                for (name, command) in &lock.commands {
-                    let info = &command.information();
-                    ApplicationCommand::create_global_application_command(&context, |c| {
-                        c.name(name).description(&info.description);
-                        if let Some(options) = &info.options {
-                            for option in options {
-                                c.add_option(option.to_owned());
+                ApplicationCommand::set_global_application_commands(&context, |c| {
+                    for (command_name, command_data) in &lock.commands {
+                        let command_information = &command_data.information();
+                        c.create_application_command(|command| {
+                            command
+                                .name(command_name)
+                                .description(&command_information.description);
+                            if let Some(options) = &command_information.options {
+                                for option in options {
+                                    command.add_option(option.to_owned());
+                                }
                             }
-                        };
-                        c
-                    })
-                    .await
-                    .expect("failed to create command");
-                }
-            }
-        }
+                            command
+                        });
+                    }
 
-        info!("shard {} is ready as {}", context.shard_id, bot.user.tag());
+                    c
+                })
+                .await
+                .expect("failed to create commands");
+                // ApplicationCommand::create_global_application_commands(context, |c| {
+                //      for (name, command) in &lock.commands {
+                //         let info = &command.information();
+                //         c.create_application_command(|c| {
+                //             c.name(name).description(&info.description);
+                //             if let Some(options) = &info.options {
+                //                 for option in options {
+                //                     c.add_option(option.to_owned());
+                //                 }
+                //             };
+                //             c
+                //         }).await.expect("failed to create command");
+                //     }
+                //     c
+                // }
+            }
+
+            info!("shard {} is ready as {}", context.shard_id, bot.user.tag());
+        }
     }
 
     async fn interaction_create(&self, context: Context, interaction: Interaction) {

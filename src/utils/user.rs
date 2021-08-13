@@ -34,7 +34,7 @@ pub async fn get_user_banner_url(profile: &UserProfile) -> RuskyResult<String> {
                 return Ok(url);
             }
         }
-        return Err(Box::new(NoneError));
+        Err(Box::new(NoneError))
     } else {
         Err(Box::new(NoneError))
     }

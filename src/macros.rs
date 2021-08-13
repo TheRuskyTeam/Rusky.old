@@ -1,61 +1,6 @@
-#[macro_export]
-macro_rules! run {
-    	($block:block catch $err:ident => $err_block:block) => {
-        	let try_block = || -> rusky::RuskyResult<()> {
-            	$block
-            	Ok(())
-        	};
-        	if let Err($err) = try_block() {
-            	$err_block
-        	}
-    	}
-	}
-#[macro_export]
-macro_rules! async_run {
-        ($block:block catch $err:ident => $err_block:block) => {
-            async fn async_block() -> rusky::typings::RuskyResult<()> {
-                $block
-                Ok(())
-            };
-            if let Err($err) = async_block().await {
-                $err_block
-            }
-        }
-    }
-#[macro_export]
-macro_rules! setup {
-    () => {
-        $crate::run! {{
-                 fern::Dispatch::new()
-                    .format(|out, message, record| {
-                        out.finish(format_args!(
-                        "{}",
-                rusky::utils::format_log_message(
-                    record.level().to_string(),
-                    record.target().to_string(),
-                    chrono::Local::now()
-                        .format("%H:%M:%S/%Y-%m-%d")
-                        .to_string(),
-                    message.to_string()
-                )
-            ))
-        })
-        .level(log::LevelFilter::Debug)
-        .level_for("hyper", log::LevelFilter::Info)
-        .chain(std::io::stdout())
-        // .chain(fern::log_file("rusky.log")?)
-        .apply()?;
-            } catch err => {
-                panic!("{:?}", err);
-            }}
-    };
-}
 pub mod commands {
-    #[macro_export]
-    macro_rules! acmd {
-        ($hash:ident <= = $command:ident) => {
-            $hash.insert($command::information(&$command).name, Box::new($command))
-        };
+    pub macro acmd($hash:ident <= = $command:ident) {
+        $hash.insert($command::information(&$command).name, Box::new($command))
     }
     #[macro_export]
     macro_rules! __slash_command_option {
@@ -73,7 +18,20 @@ pub mod commands {
             .required(true)
             .kind(serenity::model::interactions::application_command::ApplicationCommandOptionType::String)
         }};
-         ($option_name:expr, OptionUser, $option_description:expr) => {{
+        ($option_name:expr, OptionChannel, $option_description:expr) => {{
+            serenity::builder::CreateApplicationCommandOption::default()
+                .name($option_name)
+                .description($option_description)
+                .kind(serenity::model::interactions::application_command::ApplicationCommandOptionType::Channel)
+        }};
+        ($option_name:expr, Channel, $option_description:expr) => {{
+            serenity::builder::CreateApplicationCommandOption::default()
+                .name($option_name)
+                .description($option_description)
+                .required(true)
+                .kind(serenity::model::interactions::application_command::ApplicationCommandOptionType::Channel)
+        }};
+        ($option_name:expr, OptionUser, $option_description:expr) => {{
             sserenity::builder::CreateApplicationCommandOption::default()
                 .name($option_name)
                 .description($option_description)
@@ -87,8 +45,7 @@ pub mod commands {
         }};
 
     }
-    #[macro_export]
-    macro_rules! slash {
+    pub macro slash {
         (
             $to_impl:ident =>
             (@name: $slash_command_name:expr)
@@ -108,7 +65,7 @@ pub mod commands {
                     $func(c).await
                 }
             }
-        };
+        },
         (
             $to_impl:ident =>
             (@name: $slash_command_name:expr)
@@ -137,11 +94,10 @@ pub mod commands {
                     $func(c).await
                 }
             }
-        };
+        },
 
     }
-    #[macro_export]
-    macro_rules! get_arg {
+    pub macro get_arg {
         ($variable:ident, Text ?? $default_text_value:expr) => {{
             if let Some(to_get) = $variable {
                 if let Some(serenity::model::interactions::application_command
@@ -153,7 +109,20 @@ pub mod commands {
             } else {
                 $default_text_value.to_string()
             }
-        }};
+        }},
+        ($variable:ident, Channel) => {{
+            if let Some(to_get) = $variable {
+                    if let Some(serenity::model::interactions::application_command
+                    ::ApplicationCommandInteractionDataOptionValue
+                    ::Channel(ch)) = &to_get.resolved {
+                       Some(ch)
+                    } else {
+                        None
+                    }
+            } else {
+                None
+            }
+        }},
         ($variable:ident, User) => {{
             if let Some(to_get) = $variable {
                     if let Some(serenity::model::interactions::application_command
@@ -166,15 +135,8 @@ pub mod commands {
             } else {
                 None
             }
-        }};
+        }},
     }
 }
 
-pub mod util {
-    #[macro_export]
-    macro_rules! nh {
-        () => {
-            std::collections::HashMap::new()
-        };
-    }
-}
+pub mod util {}

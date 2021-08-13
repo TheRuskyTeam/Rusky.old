@@ -1,4 +1,5 @@
 #![feature(format_args_capture)]
+#![feature(decl_macro)]
 use std::error::Error;
 
 pub mod apis;
@@ -14,3 +15,6 @@ pub mod utils;
 
 pub type AnyError = Box<dyn Error + Sync + Send + 'static>;
 pub type RuskyResult<T> = Result<T, AnyError>;
+pub macro f($($t:tt)*) {
+    format!($($t)*)
+}

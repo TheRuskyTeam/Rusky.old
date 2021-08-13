@@ -1,16 +1,20 @@
+use serenity::builder::CreateEmbed;
+
 use crate::{
     commands::SlashCommandContext,
     constants::colors::BLUE,
     errors::NoneError,
-    get_arg,
-    slash,
-    utils,
+    f,
+    macros::commands::*,
+    utils::{
+        time::get_discord_relative_time,
+        user::{get_user_banner_url, get_user_profile, random_discord_default_avatar},
+    },
     RuskyResult,
 };
-use serenity::builder::CreateEmbed;
+
 pub struct PingCommand;
 pub struct UserInfoCommand;
-
 pub async fn userinfo(context: &SlashCommandContext) -> RuskyResult<()> {
     if context.command.guild_id.is_some() {
         let member_to_get_information = context.command.data.options.get(0);
@@ -18,11 +22,11 @@ pub async fn userinfo(context: &SlashCommandContext) -> RuskyResult<()> {
         let guild = context.command.guild_id.ok_or(NoneError)?;
         let member = guild.member(&context, user.id).await?;
         let user_name = &user.name;
-        let user_profile = utils::user::get_user_profile(*user.id.as_u64()).await?;
-        let user_banner = utils::user::get_user_banner_url(&user_profile).await;
+        let user_profile = get_user_profile(*user.id.as_u64()).await?;
+        let user_banner = get_user_banner_url(&user_profile).await;
         let user_joined_at =
-            utils::time::get_discord_relative_time(member.joined_at.ok_or(NoneError)?.timestamp());
-        let user_created_at = utils::time::get_discord_relative_time(user.created_at().timestamp());
+            get_discord_relative_time(member.joined_at.ok_or(NoneError)?.timestamp());
+        let user_created_at = get_discord_relative_time(user.created_at().timestamp());
         let user_tag = user.tag();
         let mut embed = CreateEmbed::default();
         let mut high_color: Option<_> = None;
@@ -37,18 +41,18 @@ pub async fn userinfo(context: &SlashCommandContext) -> RuskyResult<()> {
                 }
             }
         }
-
         embed.title(format!("informações de {user_name}"));
+
         if let Ok(banner_url) = user_banner {
             embed.image(banner_url);
         }
-        if let Some(accent_color) = &user_profile.accent_color {
-            embed.color(*accent_color);
+        if let Some(accent_color) = user_profile.accent_color {
+            embed.color(accent_color);
         } else if let Some(banner_color) = &user_profile.banner_color {
-            let mut hex = String::new();
-            hex::decode(banner_color.replace("#", ""))?
+            let hex = hex::decode(banner_color.replace("#", ""))?
                 .into_iter()
-                .for_each(|i| hex += &format!("{i}"));
+                .map(|i| f!("{i}"))
+                .collect::<String>();
             if let Ok(hex) = hex.parse::<u64>() {
                 embed.color(hex);
             }
@@ -59,23 +63,24 @@ pub async fn userinfo(context: &SlashCommandContext) -> RuskyResult<()> {
         }
         embed.thumbnail(
             user.avatar_url()
-                .unwrap_or(utils::user::random_discord_default_avatar()),
+                .unwrap_or_else(random_discord_default_avatar),
         );
         embed.description(format!(
             r#"
         Tag: {user_tag}
-        Conta Criada: {user_created_at}
-        Entrou: {user_joined_at}
+        Created at: {user_created_at}
+        Joined at: {user_joined_at}
         "#
         ));
-        context.reply_embed(&mut embed).await?;
+        context.reply(embed).await?;
     } else {
         context
-            .reply_error("você só pode executar esse comando em uma guilda.")
+            .reply("err? You need to run this command in a guild")
             .await?;
     }
     Ok(())
 }
+
 pub async fn ping(context: &SlashCommandContext) -> RuskyResult<()> {
     context.reply("Pong. *Comando para fazer.*").await?;
     Ok(())
