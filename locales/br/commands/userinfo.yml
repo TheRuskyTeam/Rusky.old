@@ -1,4 +1,0 @@
-#include ~/common/commands/userinfo.yml 
-userinfo:
-  embed:
-    title: "informações de $?"
